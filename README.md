@@ -20,12 +20,12 @@
 
 make sure to look at my typescript implementation [**here**](/test).
 
-##### ! _note:_
+> You **_WILL_** need to reply to the published RMQ message or else the interaction will fail,
+> this is the equivalent of `POST`ing a response to the discord api.
+> 
+> You **_WILL_** also need to acknowledge the message, or it'll be consumed multiple times.
 
-You WILL need to reply to the published RMQ message or else the interaction will fail,
-this is the equivalent of `POST`ing a response to the discord api.
-
-You will need to also acknowledge the message, or it'll be consumed multiple times.
+###### [Discord Server](https://discord.gg/Vkbmb8kuH4)
 
 ## 📜 credits
 
