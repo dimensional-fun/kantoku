@@ -1,0 +1,14 @@
+[kantoku]
+public_key = ""
+
+    [kantoku.server]
+    host = "127.0.0.1"
+    port = 3030
+
+    [kantoku.amqp]
+    uri = "amqp://localhost:5672"
+    exchange = "gateway"
+
+    [kantoku.logging]
+    time_format = "01-02-06 15:04:05"
+    timezone = "America/Los_Angeles"
