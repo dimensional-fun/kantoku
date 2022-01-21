@@ -19,7 +19,7 @@
 
 ### implementing kantoku into your code base
 
-make sure to look at my typescript implementation [**here**](/test).
+make sure to look at my typescript implementation [**here**](https://github.com/mixtape-bot/kantoku-example).
 
 > You **_WILL_** need to reply to the published RMQ message or else the interaction will fail,
 > this is the equivalent of `POST`ing a response to the discord api.
