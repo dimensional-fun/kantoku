@@ -17,11 +17,6 @@ vendor/
 # Idea Settings
 .idea/
 
-# Testing
-test/node_modules
-test/*.js
-test/*.log
-
 # Env
 .env
 .env.local

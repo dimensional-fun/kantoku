@@ -58,14 +58,14 @@ type InteractionResponse struct {
 }
 
 type InteractionResponseData struct {
-	TTS             bool                 `json:"tts,omitempty"`
-	Content         string               `json:"content,omitempty"`
-	Embeds          []MessageEmbed       `json:"embeds,omitempty"`
-	AllowedMentions AllowedMentions      `json:"allowed_mentions,omitempty"`
-	Flags           int                  `json:"flags,omitempty"`
-	Components      []MessageComponent   `json:"components,omitempty"`
-	Attachments     []MessageAttachment  `json:"attachments,omitempty"`
-	Choices         []AutocompleteChoice `json:"choices,omitempty"`
+	TTS             *bool                 `json:"tts,omitempty"`
+	Content         *string               `json:"content,omitempty"`
+	Embeds          *[]MessageEmbed       `json:"embeds,omitempty"`
+	AllowedMentions *AllowedMentions      `json:"allowed_mentions,omitempty"`
+	Flags           *int                  `json:"flags,omitempty"`
+	Components      *[]MessageComponent   `json:"components,omitempty"`
+	Attachments     *[]MessageAttachment  `json:"attachments,omitempty"`
+	Choices         *[]AutocompleteChoice `json:"choices,omitempty"`
 }
 
 type AutocompleteChoice struct {
