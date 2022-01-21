@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/rabbitmq/amqp091-go"
 	log "github.com/sirupsen/logrus"
@@ -77,10 +75,6 @@ func publishInteraction(i *discord.Interaction) (*discord.InteractionResponse, e
 	if err := Decode(resp, &response); err != nil {
 		return nil, err
 	}
-
-	j, _ := json.Marshal(response)
-
-	log.Infoln(string(j))
 
 	return response, nil
 }
