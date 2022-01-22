@@ -7,8 +7,8 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/pelletier/go-toml v1.9.4
 	github.com/rabbitmq/amqp091-go v1.3.0
-	github.com/ugorji/go/codec v1.2.6
 	github.com/sirupsen/logrus v1.8.1
+	github.com/ugorji/go/codec v1.2.6
 )
 
 require (
