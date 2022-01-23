@@ -45,13 +45,12 @@ func (a *AMQP) setupRPC() error {
 		false,
 		nil,
 	)
-
 	if err != nil {
 		return err
 	}
 
 	/* setup queue */
-	rpc, err := a.channel.QueueDeclare(
+	rpcQueue, err := a.channel.QueueDeclare(
 		"",
 		false,
 		true,
@@ -59,28 +58,50 @@ func (a *AMQP) setupRPC() error {
 		false,
 		nil,
 	)
-
 	if err != nil {
 		return err
 	}
 
-	a.rpcQueue = rpc
+	a.rpcQueue = rpcQueue
 
-	msgs, err := a.channel.Consume(rpc.Name, "", true, true, false, false, nil)
+	/* setup consumer */
+	rpcConsumer, err := a.channel.Consume(
+		rpcQueue.Name,
+		"",
+		true,
+		true,
+		false,
+		false,
+		nil,
+	)
 	if err != nil {
 		return err
 	}
 
-	a.rpcConsumer = msgs
+	a.rpcConsumer = rpcConsumer
 	return nil
 }
 
 func (a *AMQP) Call(event string, opts amqp091.Publishing) ([]byte, error) {
+	if a.channel == nil {
+		return nil, ErrDisconnected
+	}
+
 	correlation := uuid.New().String()
+
 	opts.CorrelationId = correlation
 	opts.ReplyTo = a.rpcQueue.Name
+	opts.ContentType = "application/msgpack"
+	opts.Expiration = "3000"
 
-	err := a.publish(event, opts)
+	err := a.channel.Publish(
+		a.Group,
+		event,
+		false,
+		true,
+		opts,
+	)
+
 	if err != nil {
 		return nil, err
 	}
@@ -92,18 +113,4 @@ func (a *AMQP) Call(event string, opts amqp091.Publishing) ([]byte, error) {
 	}
 
 	return nil, ErrNoRes
-}
-
-func (a *AMQP) publish(event string, opts amqp091.Publishing) error {
-	if a.channel == nil {
-		return ErrDisconnected
-	}
-
-	return a.channel.Publish(
-		a.Group,
-		event,
-		false,
-		false,
-		opts,
-	)
 }

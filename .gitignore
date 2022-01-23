@@ -20,3 +20,6 @@ vendor/
 # Env
 .env
 .env.local
+
+# Testing
+tests/node_modules

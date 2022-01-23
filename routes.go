@@ -39,11 +39,10 @@ func PostInteractions(c *fiber.Ctx) error {
 		if resp != nil {
 			return c.Status(fiber.StatusOK).JSON(resp)
 		}
-
-		return c.SendStatus(fiber.StatusNoContent)
+	} else {
+		log.Debugln("Received Ping")
 	}
 
-	log.Debugln("Received Ping")
 	return c.Status(fiber.StatusOK).JSON(discord.InteractionResponse{
 		Type: 1,
 	})

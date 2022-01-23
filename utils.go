@@ -52,6 +52,8 @@ func initializeBroker() {
 	if err != nil {
 		return
 	}
+
+	log.Infoln("Connected to AMQP")
 }
 
 func initializeServer() {
