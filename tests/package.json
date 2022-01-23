@@ -1,0 +1,13 @@
+{
+  "name": "tests",
+  "version": "1.0.0",
+  "main": "multi-consumer.js",
+  "license": "MIT",
+  "dependencies": {
+    "@msgpack/msgpack": "^2.7.1",
+    "amqplib": "^0.8.0"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.8.2"
+  }
+}
