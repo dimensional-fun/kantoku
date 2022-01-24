@@ -1,7 +1,6 @@
 [kantoku]
 public_key = ""
-content-type = "application/msgpack"
-expose-test-route = false
+expose-test-route = true
 
     [kantoku.server]
     host = "127.0.0.1"
@@ -10,7 +9,8 @@ expose-test-route = false
 
     [kantoku.amqp]
     uri = "amqp://localhost:5672"
-    exchange = "gateway"
+    group = "gateway"
+    event = "INTERACTION_CREATE"
 
     [kantoku.logging]
     time_format = "01-02-06 15:04:05"

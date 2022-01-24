@@ -15,6 +15,8 @@ var config *toml.Tree
 var PublicKey ed25519.PublicKey
 var Amqp *AMQP
 
+var InteractionsEvent string
+
 func loadConfig() {
 	/* get config */
 	t, err := toml.LoadFile("kantoku.toml")
@@ -31,16 +33,27 @@ func loadConfig() {
 	}
 
 	PublicKey = hexDecodedKey
+
+	/* get cool stuff */
+	InteractionsEvent = config.GetDefault("kantoku.amqp.event", "INTERACTION_CREATE").(string)
 }
 
 func initializeBroker() {
 	Amqp = &AMQP{
-		Group: config.Get("kantoku.amqp.exchange").(string),
+		Group: config.Get("kantoku.amqp.group").(string),
 	}
 
 	err := Amqp.Connect()
 	if err != nil {
 		log.Fatalln(err)
+	}
+
+	queue := config.Get("kantoku.amqp.queue")
+	if queue != nil {
+		err := Amqp.channel.QueueBind(queue.(string), InteractionsEvent, Amqp.Group, false, nil)
+		if err != nil {
+			log.Fatalln(err)
+		}
 	}
 
 	log.Infoln("Connected to AMQP")
