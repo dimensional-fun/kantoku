@@ -61,7 +61,14 @@ func initializeServer() {
 
 	app := fiber.New(fiber.Config{
 		ErrorHandler:          createErrorMessage,
-		DisableStartupMessage: true,
+		AppName:               "Kantoku",
+		DisableStartupMessage: false,
+		Prefork:               config.GetDefault("kantoku.server.prefork", false).(bool),
+	})
+
+	app.Use(func(c *fiber.Ctx) error {
+		c.Set("X-Powered-By", "catboys")
+		return c.Next()
 	})
 
 	app.Use(logger.New(logger.Config{
@@ -87,8 +94,8 @@ func initializeServer() {
 
 	addr := fmt.Sprintf(
 		"%s:%d",
-		config.Get("kantoku.server.host").(string),
-		config.Get("kantoku.server.port").(int64),
+		config.GetDefault("kantoku.server.host", "127.0.0.1").(string),
+		config.GetDefault("kantoku.server.port", "8754").(int64),
 	)
 
 	log.Infof("Listening on %s", addr)

@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -33,6 +34,10 @@ func (f *Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	b.WriteString("]")
 	b.WriteString(colorReset)
 
+	b.WriteString(" ")
+
+	// write pid
+	b.WriteString(fmt.Sprintf("%d", os.Getpid()))
 	b.WriteString(" ")
 
 	// write level

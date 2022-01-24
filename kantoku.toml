@@ -4,6 +4,7 @@ public_key = ""
     [kantoku.server]
     host = "127.0.0.1"
     port = 3030
+    prefork = true
 
     [kantoku.amqp]
     uri = "amqp://localhost:5672"
