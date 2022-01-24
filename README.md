@@ -28,6 +28,42 @@ make sure to look at my typescript implementation [**here**](https://github.com/
 
 ###### [Discord Server](https://discord.gg/Vkbmb8kuH4)
 
+## 📁 api
+
+### `GET /v1`
+
+#### Http Response
+```json
+{
+    "data": "Hello, World!",
+    "success": true
+}
+```
+
+### `POST /v1/interactions`
+
+#### Http Request
+
+- `X-Signature-Ed25519` ed25519 signature
+- `X-Signature-Timestamp` timestamp of the signature
+
+<https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object>
+
+#### Http Response
+
+<https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-response-object>
+
+#### Amqp Response
+
+- `body` is returned as the `Http Response`
+
+```json
+{
+    "headers": {},
+    "body": <binary data>
+}
+```
+
 ## 📜 credits
 
 - [**disgo**](https://github.com/DisgoOrg/Disgo)
