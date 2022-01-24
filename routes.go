@@ -82,8 +82,10 @@ func handleInteraction(c *fiber.Ctx) error {
 }
 
 func publishInteraction(i *discord.Interaction) (*KantokuReply, error) {
+	contentType := config.GetDefault("kantoku.publish-content-type", "application/msgpack").(string)
+
 	/* encode the interaction so that it can be sent to the message queue */
-	body, err := Encode(i)
+	body, err := Encode(contentType, i)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +93,7 @@ func publishInteraction(i *discord.Interaction) (*KantokuReply, error) {
 	/* publish the interaction and wait for a reply */
 	resp, err := Amqp.Call(InteractionsEvent, amqp091.Publishing{
 		Body:        body,
-		ContentType: "application/msgpack",
+		ContentType: contentType,
 	})
 
 	if err != nil {

@@ -1,5 +1,6 @@
 [kantoku]
 public_key = ""
+publish-content-type = "application/json"
 expose-test-route = true
 
     [kantoku.server]
