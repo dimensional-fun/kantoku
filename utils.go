@@ -1,22 +1,18 @@
 package main
 
 import (
-	"bytes"
 	"crypto/ed25519"
 	"encoding/hex"
 	"fmt"
-	"os"
-	"time"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/pelletier/go-toml"
-	"github.com/rabbitmq/amqp091-go"
 	log "github.com/sirupsen/logrus"
+	"os"
 )
 
 var config *toml.Tree
-var publicKey ed25519.PublicKey
+var PublicKey ed25519.PublicKey
 var Amqp *AMQP
 
 func loadConfig() {
@@ -34,23 +30,17 @@ func loadConfig() {
 		log.Fatalf("error while decoding public key: %s", err)
 	}
 
-	publicKey = hexDecodedKey
+	PublicKey = hexDecodedKey
 }
 
 func initializeBroker() {
 	Amqp = &AMQP{
-		Group:   config.Get("kantoku.amqp.exchange").(string),
-		Timeout: time.Duration(time.Duration(15).Minutes()),
+		Group: config.Get("kantoku.amqp.exchange").(string),
 	}
 
-	conn, err := amqp091.Dial(config.Get("kantoku.amqp.uri").(string))
+	err := Amqp.Connect()
 	if err != nil {
 		log.Fatalln(err)
-	}
-
-	err = Amqp.Init(conn)
-	if err != nil {
-		return
 	}
 
 	log.Infoln("Connected to AMQP")
@@ -72,9 +62,9 @@ func initializeServer() {
 	})
 
 	app.Use(logger.New(logger.Config{
-		Format:     "${black}[${time}] ${cyan}HTTP:${reset} ${magenta}<${method} ${path}>${reset} ${status} ${yellow}${latency}${reset}\n",
-		TimeFormat: config.Get("kantoku.logging.time_format").(string),
-		TimeZone:   config.Get("kantoku.logging.timezone").(string),
+		Format:     "${black}[${time}]${reset} ${pid} ${cyan}HTTP:${reset} ${magenta}<${method} ${path}>${reset} ${status} ${yellow}${latency}${reset}\n",
+		TimeFormat: config.GetDefault("kantoku.logging.time_format", "01-02-06 15:04:0").(string),
+		TimeZone:   config.GetDefault("kantoku.logging.timezone", "America/Los_Angeles").(string),
 		Output:     os.Stdout,
 	}))
 
@@ -82,6 +72,11 @@ func initializeServer() {
 
 	v1.Get("/", GetIndex)
 	v1.Post("/interactions", PostInteractions)
+
+	if config.GetDefault("kantoku.expose-test-route", false).(bool) {
+		log.Warnln("The /v1/interactions-test route has been exposed, this allows any public key to be used.")
+		v1.Post("/interactions-test", PostInteractionsTest)
+	}
 
 	app.Use(func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(createJson(
@@ -134,31 +129,4 @@ func createErrorMessage(ctx *fiber.Ctx, err error) error {
 		},
 		false,
 	))
-}
-
-func verifyDiscordPayload(c *fiber.Ctx) bool {
-	signature := c.Get("X-Signature-Ed25519")
-	if signature == "" {
-		return false
-	}
-
-	sig, err := hex.DecodeString(signature)
-	if err != nil {
-		return false
-	}
-
-	if len(sig) != ed25519.SignatureSize || sig[63]&224 != 0 {
-		return false
-	}
-
-	timestamp := c.Get("X-Signature-Timestamp")
-	if timestamp == "" {
-		return false
-	}
-
-	var msg bytes.Buffer
-	msg.WriteString(timestamp)
-	msg.Write(c.Body())
-
-	return ed25519.Verify(publicKey, msg.Bytes(), sig)
 }

@@ -1,5 +1,7 @@
 [kantoku]
 public_key = ""
+content-type = "application/msgpack"
+expose-test-route = false
 
     [kantoku.server]
     host = "127.0.0.1"

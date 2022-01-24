@@ -2,8 +2,6 @@ package main
 
 import (
 	"errors"
-	"time"
-
 	"github.com/google/uuid"
 	"github.com/rabbitmq/amqp091-go"
 )
@@ -14,14 +12,22 @@ type AMQP struct {
 	rpcQueue    amqp091.Queue
 	rpcConsumer <-chan amqp091.Delivery
 
-	Group   string
-	Timeout time.Duration
+	Group string
 }
 
 var ErrNoRes = errors.New("no response from server")
 var ErrDisconnected = errors.New("disconnected from the broker")
 
-func (a *AMQP) Init(conn *amqp091.Connection) error {
+func (a *AMQP) Connect() error {
+	conn, err := amqp091.Dial(config.Get("kantoku.amqp.uri").(string))
+	if err != nil {
+		return err
+	}
+
+	return a.init(conn)
+}
+
+func (a *AMQP) init(conn *amqp091.Connection) error {
 	a.conn = conn
 
 	ch, err := conn.Channel()
@@ -82,7 +88,7 @@ func (a *AMQP) setupRPC() error {
 	return nil
 }
 
-func (a *AMQP) Call(event string, opts amqp091.Publishing) ([]byte, error) {
+func (a *AMQP) Call(event string, opts amqp091.Publishing) (*amqp091.Delivery, error) {
 	if a.channel == nil {
 		return nil, ErrDisconnected
 	}
@@ -91,14 +97,13 @@ func (a *AMQP) Call(event string, opts amqp091.Publishing) ([]byte, error) {
 
 	opts.CorrelationId = correlation
 	opts.ReplyTo = a.rpcQueue.Name
-	opts.ContentType = "application/msgpack"
 	opts.Expiration = "3000"
 
 	err := a.channel.Publish(
 		a.Group,
 		event,
 		false,
-		true,
+		false,
 		opts,
 	)
 
@@ -108,7 +113,7 @@ func (a *AMQP) Call(event string, opts amqp091.Publishing) ([]byte, error) {
 
 	for d := range a.rpcConsumer {
 		if correlation == d.CorrelationId {
-			return d.Body, nil
+			return &d, nil
 		}
 	}
 
