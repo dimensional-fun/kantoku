@@ -12,10 +12,7 @@ func (k *Kontaku) loadConfig() error {
 		return err
 	}
 
-	if err = toml.NewDecoder(file).Decode(&k.Config); err != nil {
-		return err
-	}
-	return nil
+	return toml.NewDecoder(file).Decode(&k.Config)
 }
 
 type Config struct {
