@@ -12,8 +12,6 @@ import (
 	"github.com/streadway/amqp"
 )
 
-var InteractionsEvent string
-
 func (k *Kontaku) initializeBroker() {
 	k.RpcClient = rpc.NewClient(k.Config.Kantoku.Amqp.URI).
 		WithTimeout(3000 * time.Millisecond).
@@ -55,7 +53,7 @@ func (k *Kontaku) initializeServer() {
 
 	if k.Config.Kantoku.ExposeTestRoute {
 		log.Warnln("The /v1/interactions-test route has been exposed, this allows any public key to be used.")
-		v1.Post("/interactions-test", PostInteractionsTest)
+		v1.Post("/interactions-test", k.PostInteractionsTest)
 	}
 
 	app.Use(func(c *fiber.Ctx) error {

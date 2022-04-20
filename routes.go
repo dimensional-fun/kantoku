@@ -89,7 +89,7 @@ func (k *Kontaku) publishInteraction(i discord.Interaction) (KantokuReply, error
 	/* publish the interaction and wait for a reply */
 	req := rpc.NewRequest().
 		WithExchange(k.Config.Kantoku.Amqp.Group).
-		WithRoutingKey(InteractionsEvent)
+		WithRoutingKey(k.Config.Kantoku.Amqp.Event)
 
 	req.Publishing.ContentType = contentType
 	req.Publishing.Body = body
