@@ -6,7 +6,7 @@ import (
 	"github.com/pelletier/go-toml"
 )
 
-func (k *Kontaku) loadConfig() error {
+func (k *Kantoku) loadConfig() error {
 	file, err := os.Open("kantoku.toml")
 	if err != nil {
 		return err

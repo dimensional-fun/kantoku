@@ -15,8 +15,7 @@ import (
 
 func main() {
 	logger := logrus.New()
-
-	k := &Kontaku{
+	k := &Kantoku{
 		Logger: logger,
 	}
 
@@ -72,7 +71,7 @@ func main() {
 	}
 }
 
-type Kontaku struct {
+type Kantoku struct {
 	RpcClient *rpc.Client
 	Config    Config
 	Logger    *logrus.Logger

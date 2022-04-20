@@ -10,14 +10,14 @@ type Response struct {
 	Success bool        `json:"success"`
 }
 
-func (k *Kontaku) createJsonResponse(w http.ResponseWriter, data interface{}, success bool) {
+func (k *Kantoku) createJsonResponse(w http.ResponseWriter, data interface{}, success bool) {
 	k.createJson(w, Response{
 		Data:    data,
 		Success: success,
 	})
 }
 
-func (k *Kontaku) createJson(w http.ResponseWriter, data interface{}) {
+func (k *Kantoku) createJson(w http.ResponseWriter, data interface{}) {
 	if err := json.NewEncoder(w).Encode(data); err != nil {
 		k.Logger.Errorf("Failed to create JSON response: %s", err)
 	}

@@ -9,7 +9,7 @@ import (
 	"github.com/oasisprotocol/curve25519-voi/primitives/ed25519"
 )
 
-func (k *Kontaku) VerifyRequest(r *http.Request, publicKey ed25519.PublicKey) bool {
+func (k *Kantoku) VerifyRequest(r *http.Request, publicKey ed25519.PublicKey) bool {
 	var msg bytes.Buffer
 
 	signature := r.Header.Get("X-Signature-Ed25519")

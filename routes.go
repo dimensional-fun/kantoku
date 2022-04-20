@@ -15,11 +15,11 @@ type KantokuReply struct {
 	Body    []byte            `json:"body"`
 }
 
-func (k *Kontaku) GetIndex(w http.ResponseWriter, _ *http.Request) {
+func (k *Kantoku) GetIndex(w http.ResponseWriter, _ *http.Request) {
 	k.createJsonResponse(w, "Hello, World!", true)
 }
 
-func (k *Kontaku) PostInteractions(w http.ResponseWriter, r *http.Request) {
+func (k *Kantoku) PostInteractions(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Content-Type") != "application/json" {
 		w.WriteHeader(http.StatusBadRequest)
 		k.createJsonResponse(w, "Invalid Content-Type", false)
@@ -35,7 +35,7 @@ func (k *Kontaku) PostInteractions(w http.ResponseWriter, r *http.Request) {
 	k.handleInteraction(w, r)
 }
 
-func (k *Kontaku) PostInteractionsTest(w http.ResponseWriter, r *http.Request) {
+func (k *Kantoku) PostInteractionsTest(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Content-Type") != "application/json" {
 		w.WriteHeader(http.StatusBadRequest)
 		k.createJsonResponse(w, "Invalid Content-Type", false)
@@ -65,7 +65,7 @@ func (k *Kontaku) PostInteractionsTest(w http.ResponseWriter, r *http.Request) {
 	k.handleInteraction(w, r)
 }
 
-func (k *Kontaku) handleInteraction(w http.ResponseWriter, r *http.Request) {
+func (k *Kantoku) handleInteraction(w http.ResponseWriter, r *http.Request) {
 	var interaction discord.Interaction
 	if err := json.NewDecoder(r.Body).Decode(&interaction); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -95,7 +95,7 @@ func (k *Kontaku) handleInteraction(w http.ResponseWriter, r *http.Request) {
 	k.createJson(w, discord.InteractionResponse{Type: 1})
 }
 
-func (k *Kontaku) publishInteraction(i discord.Interaction) (KantokuReply, error) {
+func (k *Kantoku) publishInteraction(i discord.Interaction) (KantokuReply, error) {
 	contentType := k.Config.Kantoku.PublishContentType
 
 	/* encode the interaction so that it can be sent to the message queue */
