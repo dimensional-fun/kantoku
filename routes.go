@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/hex"
+
 	rpc "github.com/0x4b53/amqp-rpc"
 	"github.com/gofiber/fiber/v2"
 	"github.com/mixtape-bot/kantoku/discord"
@@ -17,19 +18,19 @@ func GetIndex(c *fiber.Ctx) error {
 	return c.JSON(createJson("Hello, World!", true))
 }
 
-func PostInteractions(c *fiber.Ctx) error {
+func (k *Kontaku) PostInteractions(c *fiber.Ctx) error {
 	if c.Get("Content-Type") != "application/json" {
 		return c.Status(fiber.StatusBadRequest).JSON(createJson("Invalid Content-Type", false))
 	}
 
-	if !VerifyPayload(c, PublicKey) {
+	if !VerifyPayload(c, k.PublicKey) {
 		return c.Status(fiber.StatusUnauthorized).JSON(createJson("Invalid Payload", false))
 	}
 
-	return handleInteraction(c)
+	return k.handleInteraction(c)
 }
 
-func PostInteractionsTest(c *fiber.Ctx) error {
+func (k *Kontaku) PostInteractionsTest(c *fiber.Ctx) error {
 	if c.Get("Content-Type") != "application/json" {
 		return c.Status(fiber.StatusBadRequest).JSON(createJson("Invalid Content-Type", false))
 	}
@@ -48,82 +49,73 @@ func PostInteractionsTest(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(createJson("Invalid Payload", false))
 	}
 
-	return handleInteraction(c)
+	return k.handleInteraction(c)
 }
 
-func handleInteraction(c *fiber.Ctx) error {
-	interaction := new(discord.Interaction)
-	if err := c.BodyParser(interaction); err != nil {
+func (k *Kontaku) handleInteraction(c *fiber.Ctx) error {
+	var interaction discord.Interaction
+	if err := c.BodyParser(&interaction); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
 	if interaction.Type != 1 {
-		resp, err := publishInteraction(interaction)
+		resp, err := k.publishInteraction(interaction)
 		if err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, err.Error())
 		}
 
-		if resp != nil {
-			if resp.Headers != nil {
-				for key, value := range *resp.Headers {
-					c.Set(key, value)
-				}
+		if resp.Headers != nil {
+			for key, value := range *resp.Headers {
+				c.Set(key, value)
 			}
-
-			return c.Status(fiber.StatusOK).Send(resp.Body)
 		}
-	} else {
-		log.Debugln("Received Ping")
-	}
+		return c.Status(fiber.StatusOK).Send(resp.Body)
 
-	return c.Status(fiber.StatusOK).JSON(discord.InteractionResponse{
-		Type: 1,
-	})
+	}
+	log.Debugln("Received Ping")
+
+	return c.Status(fiber.StatusOK).JSON(discord.InteractionResponse{Type: 1})
 }
 
-func publishInteraction(i *discord.Interaction) (*KantokuReply, error) {
-	contentType := config.GetDefault("kantoku.publish-content-type", "application/msgpack").(string)
+func (k *Kontaku) publishInteraction(i discord.Interaction) (KantokuReply, error) {
+	contentType := k.Config.Kantoku.PublishContentType
 
 	/* encode the interaction so that it can be sent to the message queue */
 	body, err := Encode(contentType, i)
 	if err != nil {
-		return nil, err
+		return KantokuReply{}, err
 	}
 
 	/* publish the interaction and wait for a reply */
 	req := rpc.NewRequest().
-		WithExchange(config.Get("kantoku.amqp.group").(string)).
+		WithExchange(k.Config.Kantoku.Amqp.Group).
 		WithRoutingKey(InteractionsEvent)
 
 	req.Publishing.ContentType = contentType
 	req.Publishing.Body = body
 
-	res, err := RpcClient.Send(req)
+	res, err := k.RpcClient.Send(req)
 	if err != nil {
-		return nil, err
+		return KantokuReply{}, err
 	}
 
 	if err != nil {
 		// TODO: handle errors correctly
 		switch err {
 		case rpc.ErrRequestTimeout:
-			return nil, nil
+			return KantokuReply{}, nil
 
 		case rpc.ErrRequestRejected:
 			log.Warnln("Interaction rejected?")
-			return nil, nil
+			return KantokuReply{}, nil
 
 		case rpc.ErrUnexpectedConnClosed:
 			log.Fatalln(err)
 		}
 
-		return nil, err
+		return KantokuReply{}, err
 	}
 
-	response := new(KantokuReply)
-	if err := Decode(res.Body, &response); err != nil {
-		return nil, err
-	}
-
-	return response, nil
+	var response KantokuReply
+	return response, Decode(res.Body, &response)
 }

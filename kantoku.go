@@ -1,22 +1,43 @@
 package main
 
 import (
-	log "github.com/sirupsen/logrus"
+	"encoding/hex"
 	"os"
+
+	rpc "github.com/0x4b53/amqp-rpc"
+	"github.com/oasisprotocol/curve25519-voi/primitives/ed25519"
+	"github.com/sirupsen/logrus"
 )
 
-func init() {
-	loadConfig()
+func main() {
+	logger := logrus.New()
 
-	if os.Getenv("FIBER_PREFORK_CHILD") == "1" {
-		log.SetOutput(&NopWriter{})
-	} else {
-		log.SetReportCaller(true)
-		log.SetFormatter(&Formatter{TimestampFormat: config.Get("kantoku.logging.time_format").(string)})
+	k := &Kontaku{
+		Logger: logger,
 	}
+
+	var err error
+	if err = k.loadConfig(); err != nil {
+		k.Logger.Fatal("Failed to load config: ", err)
+	}
+	if os.Getenv("FIBER_PREFORK_CHILD") == "1" {
+		k.Logger.SetOutput(NopWriter{})
+	} else {
+		k.Logger.SetReportCaller(true)
+		k.Logger.SetFormatter(Formatter{TimestampFormat: k.Config.Kantoku.Logging.TimeFormat})
+	}
+
+	if k.PublicKey, err = hex.DecodeString(k.Config.Kantoku.PublicKey); err != nil {
+		k.Logger.Fatal("Failed to decode public key: ", err)
+	}
+
+	k.initializeBroker()
+	k.initializeServer()
 }
 
-func main() {
-	initializeBroker()
-	initializeServer()
+type Kontaku struct {
+	RpcClient *rpc.Client
+	Config    Config
+	Logger    *logrus.Logger
+	PublicKey ed25519.PublicKey
 }

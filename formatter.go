@@ -16,7 +16,7 @@ type Formatter struct {
 	TrimMessages    bool
 }
 
-func (f *Formatter) Format(entry *logrus.Entry) ([]byte, error) {
+func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	levelColor := getColorByLevel(entry.Level)
 
 	timestampFormat := f.TimestampFormat

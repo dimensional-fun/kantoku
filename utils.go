@@ -1,66 +1,39 @@
 package main
 
 import (
-	"encoding/hex"
 	"fmt"
+	"os"
+	"time"
+
 	rpc "github.com/0x4b53/amqp-rpc"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/oasisprotocol/curve25519-voi/primitives/ed25519"
-	"github.com/pelletier/go-toml"
 	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
-	"os"
-	"time"
 )
-
-var config *toml.Tree
-var PublicKey ed25519.PublicKey
-var RpcClient *rpc.Client
 
 var InteractionsEvent string
 
-func loadConfig() {
-	/* get config */
-	t, err := toml.LoadFile("kantoku.toml")
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	config = t
-
-	/* get public key */
-	hexDecodedKey, err := hex.DecodeString(config.Get("kantoku.public_key").(string))
-	if err != nil {
-		log.Fatalf("error while decoding public key: %s", err)
-	}
-
-	PublicKey = hexDecodedKey
-
-	/* get cool stuff */
-	InteractionsEvent = config.GetDefault("kantoku.amqp.event", "INTERACTION_CREATE").(string)
-}
-
-func initializeBroker() {
-	RpcClient = rpc.NewClient(config.Get("kantoku.amqp.uri").(string)).
+func (k *Kontaku) initializeBroker() {
+	k.RpcClient = rpc.NewClient(k.Config.Kantoku.Amqp.URI).
 		WithTimeout(3000 * time.Millisecond).
 		WithConfirmMode(true).
-		WithDebugLogger(log.Printf).
-		WithErrorLogger(log.Errorf)
+		WithDebugLogger(k.Logger.Printf).
+		WithErrorLogger(k.Logger.Errorf)
 
-	RpcClient.OnStarted(func(_, _ *amqp.Connection, inChan, _ *amqp.Channel) {
+	k.RpcClient.OnStarted(func(_, _ *amqp.Connection, inChan, _ *amqp.Channel) {
 		log.Infoln("Connected to AMQP")
 	})
 }
 
-func initializeServer() {
+func (k *Kontaku) initializeServer() {
 	log.Infoln("Starting fiber...")
 
 	app := fiber.New(fiber.Config{
 		ErrorHandler:          createErrorMessage,
 		AppName:               "Kantoku",
 		DisableStartupMessage: false,
-		Prefork:               config.GetDefault("kantoku.server.prefork", false).(bool),
+		Prefork:               k.Config.Kantoku.Server.Prefork,
 	})
 
 	app.Use(func(c *fiber.Ctx) error {
@@ -70,17 +43,17 @@ func initializeServer() {
 
 	app.Use(logger.New(logger.Config{
 		Format:     "${black}[${time}]${reset} ${pid} ${cyan}HTTP:${reset} ${magenta}<${method} ${path}>${reset} ${status} ${yellow}${latency}${reset}\n",
-		TimeFormat: config.GetDefault("kantoku.logging.time_format", "01-02-06 15:04:0").(string),
-		TimeZone:   config.GetDefault("kantoku.logging.timezone", "America/Los_Angeles").(string),
+		TimeFormat: k.Config.Kantoku.Logging.TimeFormat,
+		TimeZone:   k.Config.Kantoku.Logging.Timezone,
 		Output:     os.Stdout,
 	}))
 
 	v1 := app.Group("v1")
 
 	v1.Get("/", GetIndex)
-	v1.Post("/interactions", PostInteractions)
+	v1.Post("/interactions", k.PostInteractions)
 
-	if config.GetDefault("kantoku.expose-test-route", false).(bool) {
+	if k.Config.Kantoku.ExposeTestRoute {
 		log.Warnln("The /v1/interactions-test route has been exposed, this allows any public key to be used.")
 		v1.Post("/interactions-test", PostInteractionsTest)
 	}
@@ -94,11 +67,7 @@ func initializeServer() {
 		))
 	})
 
-	addr := fmt.Sprintf(
-		"%s:%d",
-		config.GetDefault("kantoku.server.host", "127.0.0.1").(string),
-		config.GetDefault("kantoku.server.port", "80").(int64),
-	)
+	addr := fmt.Sprintf("%s:%d", k.Config.Kantoku.Server.Host, k.Config.Kantoku.Server.Port)
 
 	log.Infof("Listening on %s", addr)
 
