@@ -12,8 +12,7 @@ func (k *Kontaku) loadConfig() error {
 		return err
 	}
 
-	var config Config
-	if err = toml.NewDecoder(file).Decode(&config); err != nil {
+	if err = toml.NewDecoder(file).Decode(&k.Config); err != nil {
 		return err
 	}
 	return nil
