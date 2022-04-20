@@ -2,9 +2,10 @@ package main
 
 import (
 	"encoding/hex"
+	"encoding/json"
+	"net/http"
 
 	rpc "github.com/0x4b53/amqp-rpc"
-	"github.com/gofiber/fiber/v2"
 	"github.com/mixtape-bot/kantoku/discord"
 	log "github.com/sirupsen/logrus"
 )
@@ -14,67 +15,86 @@ type KantokuReply struct {
 	Body    []byte             `json:"body"`
 }
 
-func GetIndex(c *fiber.Ctx) error {
-	return c.JSON(createJson("Hello, World!", true))
+func (k *Kontaku) GetIndex(w http.ResponseWriter, _ *http.Request) {
+	k.createJsonResponse(w, "Hello, World!", true)
 }
 
-func (k *Kontaku) PostInteractions(c *fiber.Ctx) error {
-	if c.Get("Content-Type") != "application/json" {
-		return c.Status(fiber.StatusBadRequest).JSON(createJson("Invalid Content-Type", false))
+func (k *Kontaku) PostInteractions(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("Content-Type") != "application/json" {
+		w.WriteHeader(http.StatusBadRequest)
+		k.createJsonResponse(w, "Invalid Content-Type", false)
+		return
 	}
 
-	if !VerifyPayload(c, k.PublicKey) {
-		return c.Status(fiber.StatusUnauthorized).JSON(createJson("Invalid Payload", false))
+	if !k.VerifyRequest(r, k.PublicKey) {
+		w.WriteHeader(http.StatusUnauthorized)
+		k.createJsonResponse(w, "Invalid Payload", false)
+		return
 	}
 
-	return k.handleInteraction(c)
+	k.handleInteraction(w, r)
 }
 
-func (k *Kontaku) PostInteractionsTest(c *fiber.Ctx) error {
-	if c.Get("Content-Type") != "application/json" {
-		return c.Status(fiber.StatusBadRequest).JSON(createJson("Invalid Content-Type", false))
+func (k *Kontaku) PostInteractionsTest(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("Content-Type") != "application/json" {
+		w.WriteHeader(http.StatusBadRequest)
+		k.createJsonResponse(w, "Invalid Content-Type", false)
+		return
 	}
 
-	key := c.Get("X-Kantoku-PublicKey")
+	key := r.Header.Get("X-Kantoku-PublicKey")
 	if key == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(createJson("No X-Kantoku-PublicKey given.", false))
+		w.WriteHeader(http.StatusBadRequest)
+		k.createJsonResponse(w, "No X-Kantoku-PublicKey given", false)
+		return
 	}
 
 	publicKey, err := hex.DecodeString(key)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(createJson(err, false))
+		w.WriteHeader(http.StatusBadRequest)
+		k.createJsonResponse(w, err.Error(), false)
+		return
 	}
 
-	if !VerifyPayload(c, publicKey) {
-		return c.Status(fiber.StatusUnauthorized).JSON(createJson("Invalid Payload", false))
+	if !k.VerifyRequest(r, publicKey) {
+		w.WriteHeader(http.StatusUnauthorized)
+		k.createJsonResponse(w, "Invalid Payload", false)
+		return
 	}
 
-	return k.handleInteraction(c)
+	k.handleInteraction(w, r)
 }
 
-func (k *Kontaku) handleInteraction(c *fiber.Ctx) error {
+func (k *Kontaku) handleInteraction(w http.ResponseWriter, r *http.Request) {
 	var interaction discord.Interaction
-	if err := c.BodyParser(&interaction); err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	if err := json.NewDecoder(r.Body).Decode(&interaction); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		k.createJsonResponse(w, err.Error(), false)
+		return
 	}
 
 	if interaction.Type != 1 {
 		resp, err := k.publishInteraction(interaction)
 		if err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+			w.WriteHeader(http.StatusBadRequest)
+			k.createJsonResponse(w, err.Error(), false)
+			return
 		}
 
 		if resp.Headers != nil {
 			for key, value := range *resp.Headers {
-				c.Set(key, value)
+				w.Header().Set(key, value)
 			}
 		}
-		return c.Status(fiber.StatusOK).Send(resp.Body)
-
+		w.WriteHeader(http.StatusBadRequest)
+		if _, err = w.Write(resp.Body); err != nil {
+			k.Logger.Error("Error writing response body: ", err.Error())
+		}
+		return
 	}
 	log.Debugln("Received Ping")
 
-	return c.Status(fiber.StatusOK).JSON(discord.InteractionResponse{Type: 1})
+	k.createJson(w, discord.InteractionResponse{Type: 1})
 }
 
 func (k *Kontaku) publishInteraction(i discord.Interaction) (KantokuReply, error) {
