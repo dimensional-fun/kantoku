@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/hex"
+	rpc "github.com/0x4b53/amqp-rpc"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rabbitmq/amqp091-go"
 	log "github.com/sirupsen/logrus"
@@ -91,22 +92,30 @@ func publishInteraction(i *discord.Interaction) (*KantokuReply, error) {
 	}
 
 	/* publish the interaction and wait for a reply */
-	resp, err := Amqp.Call(InteractionsEvent, amqp091.Publishing{
-		Body:        body,
-		ContentType: contentType,
-	})
+	req := rpc.NewRequest().
+		WithExchange(config.Get("kantoku.amqp.group").(string)).
+		WithRoutingKey(InteractionsEvent)
+
+	req.Publishing.ContentType = contentType
+	req.Publishing.Body = body
+
+	res, err := RpcClient.Send(req)
+	if err != nil {
+		return nil, err
+	}
 
 	if err != nil {
+		// TODO: handle errors correctly
 		switch err {
-		case ErrDisconnected:
-			err := Amqp.Connect()
-			if err != nil {
-				log.Fatalln(err)
-			}
-
-			return publishInteraction(i)
-		case ErrNoRes:
+		case rpc.ErrRequestTimeout:
 			return nil, nil
+
+		case rpc.ErrRequestRejected:
+			log.Warnln("Interaction rejected?")
+			return nil, nil
+
+		case rpc.ErrUnexpectedConnClosed:
+			log.Fatalln(err)
 		}
 
 		return nil, err

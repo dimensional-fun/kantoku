@@ -4,16 +4,19 @@ import (
 	"crypto/ed25519"
 	"encoding/hex"
 	"fmt"
+	rpc "github.com/0x4b53/amqp-rpc"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/pelletier/go-toml"
 	log "github.com/sirupsen/logrus"
+	"github.com/streadway/amqp"
 	"os"
+	"time"
 )
 
 var config *toml.Tree
 var PublicKey ed25519.PublicKey
-var Amqp *AMQP
+var RpcClient *rpc.Client
 
 var InteractionsEvent string
 
@@ -39,14 +42,11 @@ func loadConfig() {
 }
 
 func initializeBroker() {
-	Amqp = &AMQP{
-		Group: config.Get("kantoku.amqp.group").(string),
-	}
-
-	err := Amqp.Connect()
-	if err != nil {
-		log.Fatalln(err)
-	}
+	RpcClient = rpc.NewClient(config.Get("kantoku.amqp.uri").(string)).
+		WithTimeout(3000 * time.Millisecond).
+		WithConfirmMode(true).
+		WithDebugLogger(log.Printf).
+		WithErrorLogger(log.Errorf)
 
 	queue := config.Get("kantoku.amqp.queue")
 	if queue != nil {
