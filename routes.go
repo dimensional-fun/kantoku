@@ -129,7 +129,7 @@ func (k *Kantoku) publishInteraction(i discord.Interaction) (KantokuReply, error
 	}
 
 	if err != nil {
-		// TODO: handle errors correctly
+		// TODO: handle rpc errors correctly
 		switch err {
 		case rpc.ErrRequestTimeout:
 			return KantokuReply{}, nil

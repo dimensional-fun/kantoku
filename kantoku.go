@@ -31,6 +31,7 @@ func main() {
 		k.Logger.Fatal("Failed to decode public key: ", err)
 	}
 
+	/* Setting up RPC using RabbitMQ */
 	k.RpcClient = rpc.NewClient(k.Config.Kantoku.Amqp.URI).
 		WithTimeout(3000 * time.Millisecond).
 		WithConfirmMode(true).
@@ -41,17 +42,17 @@ func main() {
 		k.Logger.Infoln("Connected to AMQP")
 	})
 
-	// Starting Server
-	k.Logger.Infoln("Starting server...")
-	defer k.Logger.Infoln("Stopping server...")
+	/* Starting Server */
+	k.Logger.Infoln("Starting Kantoku...")
+	defer k.Logger.Infoln("Stopping Kantoku...")
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", k.GetIndex)
 	mux.HandleFunc("/interactions", k.PostInteractions)
 
-	if k.Config.Kantoku.ExposeTestRoute {
-		k.Logger.Warnln("The /v1/interactions-test route has been exposed, this allows any public key to be used.")
-		mux.HandleFunc("/interactions-test", k.PostInteractionsTest)
+	if k.Config.Kantoku.Server.ExposeTestRoute {
+		k.Logger.Warnln("The interaction testing route has been exposed, interactions using any public-key can be published.")
+		mux.HandleFunc("/v1/interactions-test", k.PostInteractionsTest)
 	}
 
 	addr := fmt.Sprintf("%s:%d", k.Config.Kantoku.Server.Host, k.Config.Kantoku.Server.Port)

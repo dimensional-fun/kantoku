@@ -21,17 +21,16 @@ type Config struct {
 
 type KantokuConfig struct {
 	PublicKey          string        `toml:"public_key"`
-	PublishContentType string        `toml:"publish-content-type"`
-	ExposeTestRoute    bool          `toml:"expose-test-route"`
+	PublishContentType string        `toml:"publish_content_type"`
 	Server             ServerConfig  `toml:"server"`
 	Amqp               AmqpConfig    `toml:"amqp"`
 	Logging            LoggingConfig `toml:"logging"`
 }
 
 type ServerConfig struct {
-	Host    string `toml:"host"`
-	Port    int    `toml:"port"`
-	Prefork bool   `toml:"prefork"`
+	Host            string `toml:"host"`
+	Port            int64  `toml:"port"`
+	ExposeTestRoute bool   `toml:"expose_test_route"`
 }
 
 type AmqpConfig struct {
