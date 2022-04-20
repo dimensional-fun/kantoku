@@ -1,12 +1,12 @@
 package main
 
 import (
-	"crypto/ed25519"
 	"encoding/hex"
 	"fmt"
 	rpc "github.com/0x4b53/amqp-rpc"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/oasisprotocol/curve25519-voi/primitives/ed25519"
 	"github.com/pelletier/go-toml"
 	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
@@ -48,15 +48,9 @@ func initializeBroker() {
 		WithDebugLogger(log.Printf).
 		WithErrorLogger(log.Errorf)
 
-	queue := config.Get("kantoku.amqp.queue")
-	if queue != nil {
-		err := Amqp.channel.QueueBind(queue.(string), InteractionsEvent, Amqp.Group, false, nil)
-		if err != nil {
-			log.Fatalln(err)
-		}
-	}
-
-	log.Infoln("Connected to AMQP")
+	RpcClient.OnStarted(func(_, _ *amqp.Connection, inChan, _ *amqp.Channel) {
+		log.Infoln("Connected to AMQP")
+	})
 }
 
 func initializeServer() {

@@ -2,9 +2,9 @@ package main
 
 import (
 	"bytes"
-	"crypto/ed25519"
 	"encoding/hex"
 	"github.com/gofiber/fiber/v2"
+	"github.com/oasisprotocol/curve25519-voi/primitives/ed25519"
 )
 
 func VerifyPayload(c *fiber.Ctx, key ed25519.PublicKey) bool {
