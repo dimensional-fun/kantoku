@@ -30,7 +30,7 @@ func main() {
 		k.Logger.Fatal("Failed to decode public key: ", err)
 	}
 
-	/* Setting up RPC using RabbitMQ */
+	/* setting up RPC using RabbitMQ */
 	k.RpcClient = rpc.NewClient(k.Config.Kantoku.Amqp.URI).
 		WithTimeout(3000 * time.Millisecond).
 		WithConfirmMode(true).
@@ -41,7 +41,7 @@ func main() {
 		k.Logger.Infoln("Connected to AMQP")
 	})
 
-	/* Starting Server */
+	/* starting Server */
 	k.Logger.Infoln("Starting Kantoku...")
 	defer k.Logger.Infoln("Stopping Kantoku...")
 

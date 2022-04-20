@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
- 	"strings"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -11,7 +11,7 @@ import (
 
 type Formatter struct {
 	TimestampFormat string
-	NoColors        bool
+	PrintColors     bool
 	TrimMessages    bool
 }
 
@@ -23,10 +23,10 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 		timestampFormat = time.StampMilli
 	}
 
-	// output buffer
+	/* output buffer */
 	b := &bytes.Buffer{}
 
-	// write time
+	/* write timestamp */
 	b.WriteString(colorBlack)
 	b.WriteString("[")
 	b.WriteString(entry.Time.Format(timestampFormat))
@@ -43,19 +43,19 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	b.WriteString(strings.ToUpper(entry.Level.String())[:4])
 	b.WriteString(": ")
 
-	// write caller
+	/* caller */
 	if entry.HasCaller() {
-		if !f.NoColors {
+		if f.PrintColors {
 			b.WriteString(colorMagenta)
 		}
 
 		_, _ = fmt.Fprintf(b, "<%s> ", entry.Caller.Function)
-		if !f.NoColors {
+		if f.PrintColors {
 			b.WriteString(colorReset)
 		}
 	}
 
-	// write message
+	/* write log message */
 	if f.TrimMessages {
 		b.WriteString(strings.TrimSpace(entry.Message))
 	} else {
