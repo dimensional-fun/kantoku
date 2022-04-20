@@ -12,7 +12,7 @@ services:
         depends_on:
             - rabbitmq
         expose:
-            - 3030
+            - 80
         pid: host
     rabbitmq:
         image: rabbitmq:management-alpine

@@ -97,7 +97,7 @@ func initializeServer() {
 	addr := fmt.Sprintf(
 		"%s:%d",
 		config.GetDefault("kantoku.server.host", "127.0.0.1").(string),
-		config.GetDefault("kantoku.server.port", "8754").(int64),
+		config.GetDefault("kantoku.server.port", "80").(int64),
 	)
 
 	log.Infof("Listening on %s", addr)
