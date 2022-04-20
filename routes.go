@@ -85,7 +85,6 @@ func (k *Kontaku) handleInteraction(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set(key, value)
 		}
 
-		w.WriteHeader(http.StatusBadRequest)
 		if _, err = w.Write(resp.Body); err != nil {
 			k.Logger.Error("Error writing response body: ", err.Error())
 		}
