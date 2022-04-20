@@ -22,4 +22,4 @@ vendor/
 .env.local
 
 # Testing
-tests/node_modules
+tests
