@@ -1,14 +1,15 @@
 # Builder
 FROM golang:1.18-alpine AS build
 
+ARG VERSION=dev
+
 WORKDIR /tmp/kantoku
 
 COPY . .
 
-RUN apk add --no-cache git && \
-    go mod download && \
+RUN go mod download && \
     go mod verify && \
-    go build -o kantoku
+    go build -ldflags="-X 'main.version=${VERSION}'" -o kantoku
 
 # Runner
 FROM alpine:latest

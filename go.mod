@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/0x4b53/amqp-rpc v1.0.1
+	github.com/gorilla/mux v1.8.0
 	github.com/oasisprotocol/curve25519-voi v0.0.0-20220328075252-7dd334e3daae
 	github.com/pelletier/go-toml v1.9.4
 	github.com/sirupsen/logrus v1.8.1

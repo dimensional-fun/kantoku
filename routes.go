@@ -19,6 +19,10 @@ func (k *Kantoku) GetIndex(w http.ResponseWriter, _ *http.Request) {
 	k.createJsonResponse(w, "Hello, World!", true)
 }
 
+func (k *Kantoku) GetInfo(w http.ResponseWriter, _ *http.Request) {
+	k.createJsonResponse(w, version, true)
+}
+
 func (k *Kantoku) PostInteractions(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		k.createJsonResponse(w, "Method not allowed", false)
