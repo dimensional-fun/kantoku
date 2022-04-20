@@ -20,6 +20,11 @@ func (k *Kantoku) GetIndex(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (k *Kantoku) PostInteractions(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		k.createJsonResponse(w, "Method not allowed", false)
+		return
+	}
+
 	if r.Header.Get("Content-Type") != "application/json" {
 		w.WriteHeader(http.StatusBadRequest)
 		k.createJsonResponse(w, "Invalid Content-Type", false)
@@ -36,6 +41,11 @@ func (k *Kantoku) PostInteractions(w http.ResponseWriter, r *http.Request) {
 }
 
 func (k *Kantoku) PostInteractionsTest(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		k.createJsonResponse(w, "Method not allowed", false)
+		return
+	}
+
 	if r.Header.Get("Content-Type") != "application/json" {
 		w.WriteHeader(http.StatusBadRequest)
 		k.createJsonResponse(w, "Invalid Content-Type", false)
