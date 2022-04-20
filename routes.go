@@ -4,9 +4,8 @@ import (
 	"encoding/hex"
 	rpc "github.com/0x4b53/amqp-rpc"
 	"github.com/gofiber/fiber/v2"
-	"github.com/rabbitmq/amqp091-go"
+	"github.com/mixtape-bot/kantoku/discord"
 	log "github.com/sirupsen/logrus"
-	"mixtape.gg/betsu/kantoku/discord"
 )
 
 type KantokuReply struct {
@@ -122,7 +121,7 @@ func publishInteraction(i *discord.Interaction) (*KantokuReply, error) {
 	}
 
 	response := new(KantokuReply)
-	if err := Decode(resp.Body, &response); err != nil {
+	if err := Decode(res.Body, &response); err != nil {
 		return nil, err
 	}
 

@@ -1,4 +1,4 @@
-module mixtape.gg/betsu/kantoku
+module github.com/mixtape-bot/kantoku
 
 go 1.17
 
