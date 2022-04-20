@@ -1,6 +1,6 @@
 module github.com/mixtape-bot/kantoku
 
-go 1.17
+go 1.18
 
 require (
 	github.com/0x4b53/amqp-rpc v1.0.1

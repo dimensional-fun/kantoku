@@ -1,0 +1,28 @@
+version: '3.7'
+
+services:
+    kantoku:
+        image: cr.dimensional.fun/mixtape/kantoku
+        container_name: kantoku
+        networks:
+            - rabbitmq
+        volumes:
+            - ./kantoku.toml:/opt/kantoku/kantoku.toml
+        restart: unless-stopped
+        depends_on:
+            - rabbitmq
+        expose:
+            - 3030
+        pid: host
+    rabbitmq:
+        image: rabbitmq:management-alpine
+        container_name: rabbitmq
+        restart: unless-stopped
+        expose:
+            - 5672
+        networks:
+            - rabbitmq
+
+networks:
+    rabbitmq:
+        name: rabbitmq
