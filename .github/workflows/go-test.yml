@@ -16,16 +16,6 @@ jobs:
         with:
           go-version: 1.18
 
-      - name: Cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
       - name: Go Build
         run: go build kantoku.go
 
