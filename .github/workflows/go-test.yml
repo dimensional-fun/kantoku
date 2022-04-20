@@ -26,16 +26,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: bot go build
-        run: go build cmd/bot/main.go
+      - name: Go Build
+        run: go build kantoku.go
 
-      - name: backend go build
-        run: go build cmd/backend/main.go
-
-      - name: go vet
+      - name: Go vet
         run: go vet -v ./...
 
-      - name: go staticcheck
+      - name: Go staticcheck
         uses: dominikh/staticcheck-action@v1.2.0
         with:
           version: "2022.1"

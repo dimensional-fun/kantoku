@@ -9,7 +9,7 @@ COPY . .
 
 RUN go mod download && \
     go mod verify && \
-    go build -ldflags="-X 'main.version=${VERSION}'" -o kantoku
+    go build -ldflags="-X 'kantoku.version=${VERSION}'" -o kantoku
 
 # Runner
 FROM alpine:latest
