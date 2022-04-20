@@ -98,10 +98,11 @@ func (k *Kantoku) handleInteraction(w http.ResponseWriter, r *http.Request) {
 		if _, err = w.Write(resp.Body); err != nil {
 			k.Logger.Error("Error writing response body: ", err.Error())
 		}
+
 		return
 	}
-	log.Debugln("Received Ping")
 
+	log.Debugln("Received Ping")
 	k.createJson(w, discord.InteractionResponse{Type: 1})
 }
 

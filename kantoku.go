@@ -23,12 +23,9 @@ func main() {
 	if err = k.loadConfig(); err != nil {
 		k.Logger.Fatal("Failed to load config: ", err)
 	}
-	if os.Getenv("FIBER_PREFORK_CHILD") == "1" {
-		k.Logger.SetOutput(NopWriter{})
-	} else {
-		k.Logger.SetReportCaller(true)
-		k.Logger.SetFormatter(Formatter{TimestampFormat: k.Config.Kantoku.Logging.TimeFormat})
-	}
+
+	k.Logger.SetReportCaller(true)
+	k.Logger.SetFormatter(Formatter{TimestampFormat: k.Config.Kantoku.Logging.TimeFormat})
 
 	if k.PublicKey, err = hex.DecodeString(k.Config.Kantoku.PublicKey); err != nil {
 		k.Logger.Fatal("Failed to decode public key: ", err)
@@ -58,14 +55,12 @@ func main() {
 	}
 
 	addr := fmt.Sprintf("%s:%d", k.Config.Kantoku.Server.Host, k.Config.Kantoku.Server.Port)
-
 	server := &http.Server{
 		Addr:    addr,
 		Handler: mux,
 	}
 
-	k.Logger.Infof("Listening on: %s", addr)
-
+	k.Logger.Infoln("Listening on", addr)
 	if err = server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		k.Logger.Fatal("Error while running server: ", err)
 	}
