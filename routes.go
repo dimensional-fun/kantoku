@@ -11,8 +11,8 @@ import (
 )
 
 type KantokuReply struct {
-	Headers *map[string]string `json:"headers"`
-	Body    []byte             `json:"body"`
+	Headers map[string]string `json:"headers"`
+	Body    []byte            `json:"body"`
 }
 
 func (k *Kontaku) GetIndex(w http.ResponseWriter, _ *http.Request) {
@@ -82,7 +82,7 @@ func (k *Kontaku) handleInteraction(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if resp.Headers != nil {
-			for key, value := range *resp.Headers {
+			for key, value := range resp.Headers {
 				w.Header().Set(key, value)
 			}
 		}
