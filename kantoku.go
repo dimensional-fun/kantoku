@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	rpc "github.com/0x4b53/amqp-rpc"
@@ -47,8 +46,8 @@ func main() {
 	defer k.Logger.Infoln("Stopping Kantoku...")
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", k.GetIndex)
-	mux.HandleFunc("/interactions", k.PostInteractions)
+	mux.HandleFunc("/v1", k.GetIndex)
+	mux.HandleFunc("/v1/interactions", k.PostInteractions)
 
 	if k.Config.Kantoku.Server.ExposeTestRoute {
 		k.Logger.Warnln("The interaction testing route has been exposed, interactions using any public-key can be published.")
