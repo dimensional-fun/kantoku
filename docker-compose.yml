@@ -13,7 +13,6 @@ services:
             - rabbitmq
         expose:
             - 80
-        pid: host
     rabbitmq:
         image: rabbitmq:management-alpine
         container_name: rabbitmq

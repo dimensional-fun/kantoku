@@ -1,25 +1,23 @@
 package discord
 
-type ChannelType int
-
 type Channel struct {
-	Id                         Snowflake             `json:"id"`
-	Type                       ChannelType           `json:"type"`
-	GuildId                    Snowflake             `json:"guild_id,omitempty"`
+	ID                         string                `json:"id"`
+	Type                       int                   `json:"type"`
+	GuildID                    string                `json:"guild_id,omitempty"`
 	Position                   int                   `json:"position,omitempty"`
 	PermissionOverwrites       []PermissionOverwrite `json:"permission_overwrites,omitempty"`
 	Name                       string                `json:"name"`
 	Topic                      *string               `json:"topic,omitempty"`
 	Nsfw                       bool                  `json:"nsfw,omitempty"`
-	LastMessageId              *string               `json:"last_message_id,omitempty"`
+	LastMessageID              *string               `json:"last_message_id,omitempty"`
 	Bitrate                    int                   `json:"bitrate,omitempty"`
 	UserLimit                  int                   `json:"user_limit,omitempty"`
 	RateLimitPerUser           int                   `json:"rate_limit_per_user"`
 	Recipients                 []User                `json:"recipients,omitempty"`
 	String                     *string               `json:"string,omitempty"`
-	OwnerId                    Snowflake             `json:"owner_id,omitempty"`
-	ApplicationId              Snowflake             `json:"application_id,omitempty"`
-	ParentId                   *Snowflake            `json:"parent_id,omitempty"`
+	OwnerID                    string                `json:"owner_id,omitempty"`
+	ApplicationID              string                `json:"application_id,omitempty"`
+	ParentID                   *string               `json:"parent_id,omitempty"`
 	LastPinTimestamp           *string               `json:"last_pin_timestamp,omitempty"`
 	RtcRegion                  *string               `json:"rtc_region,omitempty"`
 	VideoQualityMode           int                   `json:"video_quality_mode,omitempty"`
@@ -32,10 +30,10 @@ type Channel struct {
 }
 
 type ThreadMember struct {
-	Id            Snowflake `json:"id,omitempty"`
-	UserId        Snowflake `json:"user_id,omitempty"`
-	JoinTimestamp string    `json:"join_timestamp"`
-	Flags         int       `json:"flags"`
+	ID            string `json:"id,omitempty"`
+	UserID        string `json:"user_id,omitempty"`
+	JoinTimestamp string `json:"join_timestamp"`
+	Flags         int    `json:"flags"`
 }
 
 type ThreadChannelMetadata struct {
@@ -47,8 +45,8 @@ type ThreadChannelMetadata struct {
 }
 
 type PermissionOverwrite struct {
-	Id    Snowflake `json:"id"`
-	Type  int       `json:"type"`
-	Allow string    `json:"allow"`
-	Deny  string    `json:"deny"`
+	ID    string `json:"id"`
+	Type  int    `json:"type"`
+	Allow string `json:"allow"`
+	Deny  string `json:"deny"`
 }

@@ -1,7 +1,7 @@
 package discord
 
 type Role struct {
-	Id           Snowflake `json:"id"`
+	ID           string    `json:"id"`
 	Name         string    `json:"name"`
 	Color        int       `json:"color"`
 	Hoist        bool      `json:"hoist"`
@@ -15,7 +15,7 @@ type Role struct {
 }
 
 type RoleTag struct {
-	BotId             Snowflake `json:"bot_id,omitempty"`
-	IntegrationId     Snowflake `json:"integration_id,omitempty"`
-	PremiumSubscriber *bool     `json:"premium_subscriber,omitempty"`
+	BotID             string `json:"bot_id,omitempty"`
+	IntegrationID     string `json:"integration_id,omitempty"`
+	PremiumSubscriber *bool  `json:"premium_subscriber,omitempty"`
 }

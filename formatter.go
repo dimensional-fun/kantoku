@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -12,11 +11,11 @@ import (
 
 type Formatter struct {
 	TimestampFormat string
-	NoColors        bool
+	PrintColors     bool
 	TrimMessages    bool
 }
 
-func (f *Formatter) Format(entry *logrus.Entry) ([]byte, error) {
+func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	levelColor := getColorByLevel(entry.Level)
 
 	timestampFormat := f.TimestampFormat
@@ -24,43 +23,35 @@ func (f *Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 		timestampFormat = time.StampMilli
 	}
 
-	// output buffer
+	/* output buffer */
 	b := &bytes.Buffer{}
 
-	// write time
-	b.WriteString(colorBlack)
+	/* write timestamp */
+	if f.PrintColors {
+		b.WriteString(colorBlack)
+	}
+
 	b.WriteString("[")
 	b.WriteString(entry.Time.Format(timestampFormat))
 	b.WriteString("]")
-	b.WriteString(colorReset)
+	if f.PrintColors {
+		b.WriteString(colorReset)
+	}
 
 	b.WriteString(" ")
 
-	// write pid
-	b.WriteString(fmt.Sprintf("%d", os.Getpid()))
-	b.WriteString(" ")
-
-	// write level
-	if !f.NoColors {
+	/* write log level */
+	if f.PrintColors {
 		_, _ = fmt.Fprint(b, levelColor)
 	}
 
 	b.WriteString(strings.ToUpper(entry.Level.String())[:4])
 	b.WriteString(": ")
-
-	// write caller
-	if entry.HasCaller() {
-		if !f.NoColors {
-			b.WriteString(colorMagenta)
-		}
-
-		_, _ = fmt.Fprintf(b, "<%s> ", entry.Caller.Function)
-		if !f.NoColors {
-			b.WriteString(colorReset)
-		}
+	if f.PrintColors {
+		b.WriteString(colorReset)
 	}
 
-	// write message
+	/* write log message */
 	if f.TrimMessages {
 		b.WriteString(strings.TrimSpace(entry.Message))
 	} else {
@@ -73,13 +64,12 @@ func (f *Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 }
 
 const (
-	colorBlack   = "\u001b[90m"
-	colorRed     = "\u001b[91m"
-	colorGreen   = "\u001b[92m"
-	colorYellow  = "\u001b[93m"
-	colorBlue    = "\u001b[94m"
-	colorMagenta = "\u001b[95m"
-	colorReset   = "\u001b[0m"
+	colorBlack  = "\u001b[90m"
+	colorRed    = "\u001b[91m"
+	colorGreen  = "\u001b[92m"
+	colorYellow = "\u001b[93m"
+	colorBlue   = "\u001b[94m"
+	colorReset  = "\u001b[0m"
 )
 
 func getColorByLevel(level logrus.Level) string {

@@ -1,12 +1,11 @@
 [kantoku]
 public_key = ""
-publish-content-type = "application/json"
-expose-test-route = false
+publish_content_type = "application/json"
 
     [kantoku.server]
     host = "127.0.0.1"
     port = 80
-    prefork = true
+    expose_test_route = false
 
     [kantoku.amqp]
     uri = "amqp://localhost:5672"
