@@ -27,11 +27,16 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	b := &bytes.Buffer{}
 
 	/* write timestamp */
-	b.WriteString(colorBlack)
+	if f.PrintColors {
+		b.WriteString(colorBlack)
+	}
+
 	b.WriteString("[")
 	b.WriteString(entry.Time.Format(timestampFormat))
 	b.WriteString("]")
-	b.WriteString(colorReset)
+	if f.PrintColors {
+		b.WriteString(colorReset)
+	}
 
 	b.WriteString(" ")
 
@@ -42,18 +47,6 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	b.WriteString(strings.ToUpper(entry.Level.String())[:4])
 	b.WriteString(": ")
-
-	/* caller */
-	if entry.HasCaller() {
-		if f.PrintColors {
-			b.WriteString(colorMagenta)
-		}
-
-		_, _ = fmt.Fprintf(b, "<%s> ", entry.Caller.Function)
-		if f.PrintColors {
-			b.WriteString(colorReset)
-		}
-	}
 
 	/* write log message */
 	if f.TrimMessages {

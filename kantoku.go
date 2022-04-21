@@ -27,7 +27,7 @@ func main() {
 	}
 
 	k.Logger.SetReportCaller(true)
-	k.Logger.SetFormatter(Formatter{TimestampFormat: k.Config.Kantoku.Logging.TimeFormat})
+	k.Logger.SetFormatter(Formatter{TimestampFormat: k.Config.Kantoku.Logging.TimeFormat, PrintColors: true})
 
 	if k.PublicKey, err = hex.DecodeString(k.Config.Kantoku.PublicKey); err != nil {
 		k.Logger.Fatal("Failed to decode public key: ", err)
