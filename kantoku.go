@@ -36,7 +36,7 @@ func main() {
 	k.RpcClient = rpc.NewClient(k.Config.Kantoku.Amqp.URI).
 		WithTimeout(3000 * time.Millisecond).
 		WithConfirmMode(true).
-		WithDebugLogger(k.Logger.Printf).
+		WithDebugLogger(k.Logger.Debugf).
 		WithErrorLogger(k.Logger.Errorf)
 
 	k.RpcClient.OnStarted(func(_, _ *amqp.Connection, inChan, _ *amqp.Channel) {
