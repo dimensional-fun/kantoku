@@ -47,6 +47,9 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	b.WriteString(strings.ToUpper(entry.Level.String())[:4])
 	b.WriteString(": ")
+	if f.PrintColors {
+		b.WriteString(colorReset)
+	}
 
 	/* write log message */
 	if f.TrimMessages {
