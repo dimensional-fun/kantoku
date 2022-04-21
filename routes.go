@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/hex"
 	"encoding/json"
+	"io"
 	"net/http"
 
 	rpc "github.com/0x4b53/amqp-rpc"
@@ -69,20 +71,25 @@ func (k *Kantoku) PostInteractionsTest(w http.ResponseWriter, r *http.Request) {
 }
 
 func (k *Kantoku) handleInteraction(w http.ResponseWriter, r *http.Request) {
-	var interaction map[string]any
-	if err := json.NewDecoder(r.Body).Decode(&interaction); err != nil {
+	var interaction struct {
+		Type int `json:"type"`
+	}
+
+	var body *bytes.Buffer
+
+	if err := json.NewDecoder(io.TeeReader(r.Body, body)).Decode(&interaction); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		k.createJsonResponse(w, err.Error(), false)
 		return
 	}
 
-	if interaction["type"] == 1 {
+	if interaction.Type == 1 {
 		log.Debugln("Received Ping")
 		k.createJson(w, InteractionResponse{Type: 1})
 		return
 	}
 
-	resp, err := k.publishInteraction(interaction)
+	resp, err := k.publishInteraction(body.Bytes())
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		k.createJsonResponse(w, err.Error(), false)
@@ -98,21 +105,13 @@ func (k *Kantoku) handleInteraction(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (k *Kantoku) publishInteraction(i map[string]any) (KantokuReply, error) {
-	contentType := k.Config.Kantoku.PublishContentType
-
-	/* encode the interaction so that it can be sent to the message queue */
-	body, err := Encode(contentType, i)
-	if err != nil {
-		return KantokuReply{}, err
-	}
-
+func (k *Kantoku) publishInteraction(body []byte) (KantokuReply, error) {
 	/* publish the interaction and wait for a reply */
 	req := rpc.NewRequest().
 		WithExchange(k.Config.Kantoku.Amqp.Group).
 		WithRoutingKey(k.Config.Kantoku.Amqp.Event)
 
-	req.Publishing.ContentType = contentType
+	req.Publishing.ContentType = "application/json"
 	req.Publishing.Body = body
 
 	res, err := k.RpcClient.Send(req)
@@ -138,7 +137,7 @@ func (k *Kantoku) publishInteraction(i map[string]any) (KantokuReply, error) {
 	}
 
 	var response KantokuReply
-	return response, Decode(res.Body, &response)
+	return response, json.Unmarshal(res.Body, &response)
 }
 
 type InteractionResponse struct {
