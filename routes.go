@@ -9,6 +9,8 @@ import (
 
 	rpc "github.com/0x4b53/amqp-rpc"
 	log "github.com/sirupsen/logrus"
+	"github.com/streadway/amqp"
+	"github.com/ugorji/go/codec"
 )
 
 type KantokuReply struct {
@@ -105,7 +107,7 @@ func (k *Kantoku) handleInteraction(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (k *Kantoku) publishInteraction(body []byte) (KantokuReply, error) {
+func (k *Kantoku) publishInteraction(body []byte) (response KantokuReply, err error) {
 	/* publish the interaction and wait for a reply */
 	req := rpc.NewRequest().
 		WithExchange(k.Config.Kantoku.Amqp.Group).
@@ -114,11 +116,8 @@ func (k *Kantoku) publishInteraction(body []byte) (KantokuReply, error) {
 	req.Publishing.ContentType = "application/json"
 	req.Publishing.Body = body
 
-	res, err := k.RpcClient.Send(req)
-	if err != nil {
-		return KantokuReply{}, err
-	}
-
+	var res *amqp.Delivery
+	res, err = k.RpcClient.Send(req)
 	if err != nil {
 		// TODO: handle rpc errors correctly
 		switch err {
@@ -132,12 +131,11 @@ func (k *Kantoku) publishInteraction(body []byte) (KantokuReply, error) {
 		case rpc.ErrUnexpectedConnClosed:
 			log.Fatalln(err)
 		}
-
-		return KantokuReply{}, err
+		return
 	}
 
-	var response KantokuReply
-	return response, json.Unmarshal(res.Body, &response)
+	err = codec.NewDecoderBytes(res.Body, k.MsgpackHandle).Decode(&response)
+	return
 }
 
 type InteractionResponse struct {
