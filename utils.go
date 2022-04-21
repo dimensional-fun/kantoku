@@ -18,6 +18,7 @@ func (k *Kantoku) createJsonResponse(w http.ResponseWriter, data interface{}, su
 }
 
 func (k *Kantoku) createJson(w http.ResponseWriter, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(data); err != nil {
 		k.Logger.Errorf("Failed to create JSON response: %s", err)
 	}
