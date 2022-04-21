@@ -4,7 +4,7 @@ publish_content_type = "application/json"
 
     [kantoku.server]
     host = "127.0.0.1"
-    port = 80
+    port = 8080
     expose_test_route = false
 
     [kantoku.amqp]
