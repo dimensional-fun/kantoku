@@ -7,7 +7,8 @@ WORKDIR /tmp/kantoku
 
 COPY . .
 
-RUN go mod download && \
+RUN apk add --no-cache git && \
+    go mod download && \
     go mod verify && \
     go build -ldflags="-X 'main.version=${VERSION}'" -o kantoku
 
