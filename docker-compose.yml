@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
     kantoku:
-        image: cr.dimensional.fun/mixtape/kantoku
+        image: ghcr.io/mixtape-bot/kantoku
         container_name: kantoku
         networks:
             - rabbitmq
