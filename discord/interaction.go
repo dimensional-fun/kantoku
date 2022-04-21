@@ -8,10 +8,10 @@ type Interaction struct {
 	GuildID       string          `json:"guild_id,omitempty"`
 	ChannelID     string          `json:"channel_id,omitempty"`
 	Member        Member          `json:"member,omitempty"`
-	User          User            `json:"user,omitempty"`
+	User          *User           `json:"user,omitempty"`
 	Token         string          `json:"token"`
 	Version       int             `json:"version"`
-	Message       Message         `json:"message,omitempty"`
+	Message       *Message        `json:"message,omitempty"`
 	Locale        string          `json:"locale,omitempty"`
 	GuildLocale   string          `json:"guild_locale,omitempty"`
 }
@@ -20,7 +20,7 @@ type InteractionData struct {
 	ID            string                                    `json:"id,omitempty"`
 	Name          string                                    `json:"name,omitempty"`
 	Type          int                                       `json:"type,omitempty"`
-	Resolved      InteractionResolvedData                   `json:"resolved,omitempty"`
+	Resolved      *InteractionResolvedData                  `json:"resolved,omitempty"`
 	Options       []ApplicationCommandInteractionDataOption `json:"options,omitempty"`
 	CustomID      string                                    `json:"custom_id,omitempty"`
 	ComponentType int                                       `json:"component_type,omitempty"`

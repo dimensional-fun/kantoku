@@ -5,7 +5,7 @@ type Message struct {
 	ChannelID        string              `json:"channel_id"`
 	GuildID          string              `json:"guild_id,omitempty"`
 	Author           *User               `json:"author"`
-	Member           Member              `json:"member,omitempty"`
+	Member           *Member             `json:"member,omitempty"`
 	Content          string              `json:"content,omitempty"`
 	Timestamp        string              `json:"timestamp"`
 	EditedTimestamp  *string             `json:"edited_timestamp"`
@@ -21,14 +21,14 @@ type Message struct {
 	Pinned           bool                `json:"pinned"`
 	WebhookID        string              `json:"webhook_id,omitempty"`
 	Type             int                 `json:"type"`
-	Activity         MessageActivity     `json:"activity,omitempty"`
-	Application      MessageApplication  `json:"application,omitempty"`
+	Activity         *MessageActivity    `json:"activity,omitempty"`
+	Application      *MessageApplication `json:"application,omitempty"`
 	ApplicationID    string              `json:"application_id,omitempty"`
-	MessageReference MessageReference    `json:"message_reference,omitempty"`
+	MessageReference *MessageReference   `json:"message_reference,omitempty"`
 	Flags            int                 `json:"flags,omitempty"`
 	ReferenceMessage *Message            `json:"reference_message,omitempty"`
 	Interaction      *MessageInteraction `json:"interaction,omitempty"`
-	Thread           Channel             `json:"thread,omitempty"`
+	Thread           *Channel            `json:"thread,omitempty"`
 	Components       []MessageComponent  `json:"components,omitempty"`
 	StickerItems     []StickerItem       `json:"sticker_items,omitempty"`
 	Stickers         []Sticker           `json:"stickers,omitempty"`
