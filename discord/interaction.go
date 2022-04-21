@@ -53,29 +53,5 @@ type SelectOption struct {
 }
 
 type InteractionResponse struct {
-	Type int                     `json:"type"`
-	Data InteractionResponseData `json:"data,omitempty"`
-}
-
-type InteractionResponseData struct {
-	TTS             bool                 `json:"tts,omitempty"`
-	Content         string               `json:"content,omitempty"`
-	Embeds          []MessageEmbed       `json:"embeds,omitempty"`
-	AllowedMentions *AllowedMentions     `json:"allowed_mentions,omitempty"`
-	Flags           int                  `json:"flags,omitempty"`
-	Components      []MessageComponent   `json:"components,omitempty"`
-	Attachments     []MessageAttachment  `json:"attachments,omitempty"`
-	Choices         []AutocompleteChoice `json:"choices,omitempty"`
-}
-
-type AutocompleteChoice struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
-}
-
-type AllowedMentions struct {
-	Parse       []string `json:"parse,omitempty"`
-	Roles       []string `json:"roles,omitempty"`
-	Users       []string `json:"users,omitempty"`
-	RepliedUser bool     `json:"replied_user,omitempty"`
+	Type int `json:"type"`
 }
