@@ -48,12 +48,15 @@ func main() {
 	defer k.Logger.Infoln("Stopping Kantoku...")
 
 	handler := mux.NewRouter()
+
+	/* setup router middleware */
 	handler.Use(func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("X-Powered-By", "catboys")
 			handler.ServeHTTP(w, r)
 		})
 	})
+
 	handler.Use(func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			lw := NewLogResponseWriter(w)
@@ -64,13 +67,14 @@ func main() {
 		})
 	})
 
+	/* expose routes */
 	handler.HandleFunc("/v1", k.GetIndex).Methods(http.MethodGet)
 	handler.HandleFunc("/v1/info", k.GetInfo).Methods(http.MethodGet)
 	handler.HandleFunc("/v1/interactions", k.PostInteractions).Methods(http.MethodPost)
 
 	if k.Config.Kantoku.Server.ExposeTestRoute {
 		k.Logger.Warnln("The interaction testing route has been exposed, interactions using any public-key can be published.")
-		handler.HandleFunc("/v1/interactions-test", k.PostInteractionsTest)
+		handler.HandleFunc("/v1/interactions-test", k.PostInteractionsTest).Methods(http.MethodPost)
 	}
 
 	addr := fmt.Sprintf("%s:%d", k.Config.Kantoku.Server.Host, k.Config.Kantoku.Server.Port)
