@@ -61,13 +61,12 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 }
 
 const (
-	colorBlack   = "\u001b[90m"
-	colorRed     = "\u001b[91m"
-	colorGreen   = "\u001b[92m"
-	colorYellow  = "\u001b[93m"
-	colorBlue    = "\u001b[94m"
-	colorMagenta = "\u001b[95m"
-	colorReset   = "\u001b[0m"
+	colorBlack  = "\u001b[90m"
+	colorRed    = "\u001b[91m"
+	colorGreen  = "\u001b[92m"
+	colorYellow = "\u001b[93m"
+	colorBlue   = "\u001b[94m"
+	colorReset  = "\u001b[0m"
 )
 
 func getColorByLevel(level logrus.Level) string {

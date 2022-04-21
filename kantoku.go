@@ -26,7 +26,6 @@ func main() {
 		k.Logger.Fatal("Failed to load config: ", err)
 	}
 
-	k.Logger.SetReportCaller(true)
 	k.Logger.SetFormatter(Formatter{TimestampFormat: k.Config.Kantoku.Logging.TimeFormat, PrintColors: true})
 
 	if k.PublicKey, err = hex.DecodeString(k.Config.Kantoku.PublicKey); err != nil {
@@ -57,8 +56,11 @@ func main() {
 	})
 	handler.Use(func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			k.Logger.Infof("%s %s", r.Method, r.URL.Path)
-			handler.ServeHTTP(w, r)
+			lw := NewLogResponseWriter(w)
+			start := time.Now()
+			handler.ServeHTTP(lw, r)
+			stop := time.Now()
+			k.Logger.Infof("%s %s %s %d %s", r.RemoteAddr, r.Method, r.URL, lw.StatusCode, stop.Sub(start).String())
 		})
 	})
 
