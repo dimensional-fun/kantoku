@@ -1,9 +1,10 @@
-# 📡 mixtape-bot/kantoku
+![Kantoku](https://user-images.githubusercontent.com/44017640/164708096-1d0585d4-5963-4011-bb36-763d413f1acc.png)
 
-> http interactions server written in go
+## 📦 Features
 
-- publishes all interactions to rabbitmq
-- probably bad because im very new to go
+- super-duper fast
+- publishes all interactions to rabbitmq as JSON
+- interaction testing route
 
 ## ⛓️ usage
 
@@ -13,20 +14,12 @@
 2. run the server thingy
 3. go to your application in the [**discord developer portal**](https://discord.com/developers/applications) and set
    your interactions endpoint url to `https://<domain>/v1/interactions`
-4. it should look something like this when working!
-
-![yessir](https://media.discordapp.net/attachments/830270945213284403/933854420410728458/unknown.png)
 
 ### implementing kantoku into your code base
 
-make sure to look at my typescript implementation [**here**](https://github.com/mixtape-bot/kantoku-example).
+_wip_
 
-> You **_WILL_** need to reply to the published RMQ message or else the interaction will fail,
-> this is the equivalent of `POST`ing a response to the discord api.
->
-> You **_WILL_** also need to acknowledge the message, or it'll be consumed multiple times.
-
-###### [Discord Server](https://discord.gg/Vkbmb8kuH4)
+###### [Discord Server](https://discord.gg/yDQz3fMBfz)
 
 ## 📁 api
 
@@ -55,20 +48,14 @@ make sure to look at my typescript implementation [**here**](https://github.com/
 
 #### Amqp Response
 
-- `body` is returned as the `Http Response`
+response body is the response returned to discord.
 
-```json
-{
-    "headers": {},
-    "body": <binary data>
-}
-```
+**A _Content-Header_ must be supplied**
 
-## 📜 credits
+## 📜 contributors
 
-- [**disgo**](https://github.com/DisgoOrg/Disgo)
-- [**spectacles**](https://github.com/spac-tacles/go)
-- [**suggestionsbot/voting**](https://github.com/suggestionsbot/voting)
+- [@melike2d](https://github.com/melike2d)
+- [@TopiSenpai](https://github.com/TopiSenpai)
 
 ---
 
