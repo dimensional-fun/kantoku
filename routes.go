@@ -60,10 +60,6 @@ func (k *Kantoku) handleInteraction(w http.ResponseWriter, r *http.Request, pk e
 		return
 	}
 
-	k.handleInteraction(w, r)
-}
-
-func (k *Kantoku) handleInteraction(w http.ResponseWriter, r *http.Request) {
 	var interaction struct {
 		Type int `json:"type"`
 	}
@@ -89,6 +85,7 @@ func (k *Kantoku) handleInteraction(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := k.publishInteraction(body)
 	if err != nil {
+		k.Logger.Errorln("Error publishing interaction:", err)
 		w.WriteHeader(http.StatusBadRequest)
 		k.createJsonResponse(w, err.Error(), false)
 		return
@@ -101,7 +98,7 @@ func (k *Kantoku) handleInteraction(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", resp.ContentType)
 	if _, err = w.Write(resp.Body); err != nil {
-		k.Logger.Error("Error writing response body: ", err.Error())
+		k.Logger.Errorln("Error writing response body:", err.Error())
 	}
 }
 

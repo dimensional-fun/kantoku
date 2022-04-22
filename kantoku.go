@@ -22,13 +22,28 @@ func main() {
 
 	var err error
 	if err = k.loadConfig(); err != nil {
-		k.Logger.Fatal("Failed to load config: ", err)
+		k.Logger.Fatal("failed to load config: ", err)
 	}
 
-	k.Logger.SetFormatter(Formatter{TimestampFormat: k.Config.Kantoku.Logging.TimeFormat, PrintColors: true})
+	/* configure logging */
+	formatter := Formatter{
+		TimestampFormat: k.Config.Kantoku.Logging.TimeFormat,
+		PrintColors:     true,
+	}
 
+	k.Logger.SetFormatter(formatter)
+
+	level, err := logrus.ParseLevel(k.Config.Kantoku.Logging.Level)
+	if err != nil {
+		k.Logger.Warnln("unable to parse configured log level:", err)
+		level = logrus.InfoLevel
+	}
+
+	k.Logger.SetLevel(level)
+
+	/* decode public key */
 	if k.PublicKey, err = hex.DecodeString(k.Config.Kantoku.PublicKey); err != nil {
-		k.Logger.Fatal("Failed to decode public key: ", err)
+		k.Logger.Fatal("failed to decode public key: ", err)
 	}
 
 	/* setting up RPC using RabbitMQ */
@@ -39,12 +54,12 @@ func main() {
 		WithErrorLogger(k.Logger.Errorf)
 
 	k.RpcClient.OnStarted(func(_, _ *amqp.Connection, inChan, _ *amqp.Channel) {
-		k.Logger.Infoln("Connected to AMQP")
+		k.Logger.Infoln("connected to rabbitmq")
 	})
 
 	/* starting Server */
-	k.Logger.Infof("Starting Kantoku %s...", version)
-	defer k.Logger.Infoln("Stopping Kantoku...")
+	k.Logger.Infof("starting w/ version: %s...", version)
+	defer k.Logger.Infoln("stopping...")
 
 	handler := mux.NewRouter()
 
@@ -72,7 +87,7 @@ func main() {
 	handler.HandleFunc("/v1/interactions", k.PostInteractions).Methods(http.MethodPost)
 
 	if k.Config.Kantoku.Server.ExposeTestRoute {
-		k.Logger.Warnln("The interaction testing route has been exposed, interactions using any public-key can be published.")
+		k.Logger.Warnln("the interaction testing route has been exposed, interactions using any public-key can be published.")
 		handler.HandleFunc("/v1/interactions-test", k.PostInteractionsTest).Methods(http.MethodPost)
 	}
 
@@ -82,9 +97,9 @@ func main() {
 		Handler: handler,
 	}
 
-	k.Logger.Infoln("Listening on", addr)
+	k.Logger.Infoln("listening on", addr)
 	if err = server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		k.Logger.Fatal("Error while running server: ", err)
+		k.Logger.Fatal("error while running server: ", err)
 	}
 }
 

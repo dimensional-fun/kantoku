@@ -14,3 +14,4 @@ public_key = ""
     [kantoku.logging]
     time_format = "01-02-06 15:04:05"
     timezone = "America/Los_Angeles"
+    level = "trace"

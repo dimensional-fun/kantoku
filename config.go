@@ -40,5 +40,5 @@ type AmqpConfig struct {
 
 type LoggingConfig struct {
 	TimeFormat string `toml:"time_format"`
-	Timezone   string `toml:"timezone"`
+	Level      string `toml:"level"`
 }
