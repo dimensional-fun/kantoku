@@ -20,11 +20,10 @@ type Config struct {
 }
 
 type KantokuConfig struct {
-	PublicKey          string        `toml:"public_key"`
-	PublishContentType string        `toml:"publish_content_type"`
-	Server             ServerConfig  `toml:"server"`
-	Amqp               AmqpConfig    `toml:"amqp"`
-	Logging            LoggingConfig `toml:"logging"`
+	PublicKey string        `toml:"public_key"`
+	Server    ServerConfig  `toml:"server"`
+	Amqp      AmqpConfig    `toml:"amqp"`
+	Logging   LoggingConfig `toml:"logging"`
 }
 
 type ServerConfig struct {

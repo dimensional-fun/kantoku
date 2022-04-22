@@ -1,6 +1,5 @@
 [kantoku]
 public_key = ""
-publish_content_type = "application/json"
 
     [kantoku.server]
     host = "127.0.0.1"

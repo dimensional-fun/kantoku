@@ -3,19 +3,13 @@ package main
 import (
 	"encoding/hex"
 	"encoding/json"
+	"github.com/oasisprotocol/curve25519-voi/primitives/ed25519"
+	"github.com/streadway/amqp"
 	"io"
 	"net/http"
 
 	rpc "github.com/0x4b53/amqp-rpc"
-	log "github.com/sirupsen/logrus"
-	"github.com/streadway/amqp"
-	"github.com/ugorji/go/codec"
 )
-
-type KantokuReply struct {
-	Headers map[string]string `json:"headers"`
-	Body    []byte            `json:"body"`
-}
 
 func (k *Kantoku) GetIndex(w http.ResponseWriter, _ *http.Request) {
 	k.createJsonResponse(w, "Hello, World!", true)
@@ -32,13 +26,7 @@ func (k *Kantoku) PostInteractions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !k.VerifyRequest(r, k.PublicKey) {
-		w.WriteHeader(http.StatusUnauthorized)
-		k.createJsonResponse(w, "Invalid Payload", false)
-		return
-	}
-
-	k.handleInteraction(w, r)
+	k.handleInteraction(w, r, k.PublicKey)
 }
 
 func (k *Kantoku) PostInteractionsTest(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +50,11 @@ func (k *Kantoku) PostInteractionsTest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !k.VerifyRequest(r, publicKey) {
+	k.handleInteraction(w, r, publicKey)
+}
+
+func (k *Kantoku) handleInteraction(w http.ResponseWriter, r *http.Request, pk ed25519.PublicKey) {
+	if !k.VerifyRequest(r, pk) {
 		w.WriteHeader(http.StatusUnauthorized)
 		k.createJsonResponse(w, "Invalid Payload", false)
 		return
@@ -90,8 +82,8 @@ func (k *Kantoku) handleInteraction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if interaction.Type == 1 {
-		log.Debugln("Received Ping")
-		k.createJson(w, InteractionResponse{Type: 1})
+		k.Logger.Debugln("Received Ping")
+		k.createJson(w, map[string]any{"type": 1})
 		return
 	}
 
@@ -102,16 +94,18 @@ func (k *Kantoku) handleInteraction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for key, value := range resp.Headers {
-		w.Header().Set(key, value)
+	if resp.ContentType == "" {
+		_ = resp.Nack(false, false)
+		return
 	}
 
+	w.Header().Set("Content-Type", resp.ContentType)
 	if _, err = w.Write(resp.Body); err != nil {
 		k.Logger.Error("Error writing response body: ", err.Error())
 	}
 }
 
-func (k *Kantoku) publishInteraction(body []byte) (response KantokuReply, err error) {
+func (k *Kantoku) publishInteraction(body []byte) (*amqp.Delivery, error) {
 	/* publish the interaction and wait for a reply */
 	req := rpc.NewRequest().
 		WithExchange(k.Config.Kantoku.Amqp.Group).
@@ -120,28 +114,5 @@ func (k *Kantoku) publishInteraction(body []byte) (response KantokuReply, err er
 	req.Publishing.ContentType = "application/json"
 	req.Publishing.Body = body
 
-	var res *amqp.Delivery
-	res, err = k.RpcClient.Send(req)
-	if err != nil {
-		// TODO: handle rpc errors correctly
-		switch err {
-		case rpc.ErrRequestTimeout:
-			return KantokuReply{}, nil
-
-		case rpc.ErrRequestRejected:
-			log.Warnln("Interaction rejected?")
-			return KantokuReply{}, nil
-
-		case rpc.ErrUnexpectedConnClosed:
-			log.Fatalln(err)
-		}
-		return
-	}
-
-	err = codec.NewDecoderBytes(res.Body, k.MsgpackHandle).Decode(&response)
-	return
-}
-
-type InteractionResponse struct {
-	Type int `json:"type"`
+	return k.RpcClient.Send(req)
 }

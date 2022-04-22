@@ -9,7 +9,6 @@ require (
 	github.com/pelletier/go-toml v1.9.4
 	github.com/sirupsen/logrus v1.8.1
 	github.com/streadway/amqp v1.0.0
-	github.com/ugorji/go/codec v1.2.7
 )
 
 require (
