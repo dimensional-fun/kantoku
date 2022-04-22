@@ -77,8 +77,7 @@ func (k *Kantoku) handleInteraction(w http.ResponseWriter, r *http.Request) {
 		Type int `json:"type"`
 	}
 
-	var body *bytes.Buffer
-
+	body := &bytes.Buffer{}
 	if err := json.NewDecoder(io.TeeReader(r.Body, body)).Decode(&interaction); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		k.createJsonResponse(w, err.Error(), false)
