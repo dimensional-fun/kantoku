@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/hex"
 	"encoding/json"
 	"io"
@@ -77,8 +76,14 @@ func (k *Kantoku) handleInteraction(w http.ResponseWriter, r *http.Request) {
 		Type int `json:"type"`
 	}
 
-	body := &bytes.Buffer{}
-	if err := json.NewDecoder(io.TeeReader(r.Body, body)).Decode(&interaction); err != nil {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		k.createJsonResponse(w, err.Error(), false)
+		return
+	}
+
+	if err := json.Unmarshal(body, &interaction); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		k.createJsonResponse(w, err.Error(), false)
 		return
@@ -90,7 +95,7 @@ func (k *Kantoku) handleInteraction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := k.publishInteraction(body.Bytes())
+	resp, err := k.publishInteraction(body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		k.createJsonResponse(w, err.Error(), false)
