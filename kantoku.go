@@ -11,6 +11,7 @@ import (
 	"github.com/oasisprotocol/curve25519-voi/primitives/ed25519"
 	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
+	"github.com/ugorji/go/codec"
 )
 
 const version = "dev"
@@ -18,7 +19,8 @@ const version = "dev"
 func main() {
 	logger := logrus.New()
 	k := &Kantoku{
-		Logger: logger,
+		Logger:        logger,
+		MsgpackHandle: &codec.MsgpackHandle{},
 	}
 
 	var err error
@@ -90,8 +92,9 @@ func main() {
 }
 
 type Kantoku struct {
-	RpcClient *rpc.Client
-	Config    Config
-	Logger    *logrus.Logger
-	PublicKey ed25519.PublicKey
+	RpcClient     *rpc.Client
+	Config        Config
+	Logger        *logrus.Logger
+	PublicKey     ed25519.PublicKey
+	MsgpackHandle *codec.MsgpackHandle
 }

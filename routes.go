@@ -1,13 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"encoding/hex"
 	"encoding/json"
+	"io"
 	"net/http"
 
 	rpc "github.com/0x4b53/amqp-rpc"
-	"github.com/mixtape-bot/kantoku/discord"
 	log "github.com/sirupsen/logrus"
+	"github.com/streadway/amqp"
+	"github.com/ugorji/go/codec"
 )
 
 type KantokuReply struct {
@@ -70,58 +73,51 @@ func (k *Kantoku) PostInteractionsTest(w http.ResponseWriter, r *http.Request) {
 }
 
 func (k *Kantoku) handleInteraction(w http.ResponseWriter, r *http.Request) {
-	var interaction discord.Interaction
-	if err := json.NewDecoder(r.Body).Decode(&interaction); err != nil {
+	var interaction struct {
+		Type int `json:"type"`
+	}
+
+	var body *bytes.Buffer
+
+	if err := json.NewDecoder(io.TeeReader(r.Body, body)).Decode(&interaction); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		k.createJsonResponse(w, err.Error(), false)
 		return
 	}
 
-	if interaction.Type != 1 {
-		resp, err := k.publishInteraction(interaction)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			k.createJsonResponse(w, err.Error(), false)
-			return
-		}
-
-		for key, value := range resp.Headers {
-			w.Header().Set(key, value)
-		}
-
-		if _, err = w.Write(resp.Body); err != nil {
-			k.Logger.Error("Error writing response body: ", err.Error())
-		}
-
+	if interaction.Type == 1 {
+		log.Debugln("Received Ping")
+		k.createJson(w, InteractionResponse{Type: 1})
 		return
 	}
 
-	log.Debugln("Received Ping")
-	k.createJson(w, discord.InteractionResponse{Type: 1})
-}
-
-func (k *Kantoku) publishInteraction(i discord.Interaction) (KantokuReply, error) {
-	contentType := k.Config.Kantoku.PublishContentType
-
-	/* encode the interaction so that it can be sent to the message queue */
-	body, err := Encode(contentType, i)
+	resp, err := k.publishInteraction(body.Bytes())
 	if err != nil {
-		return KantokuReply{}, err
+		w.WriteHeader(http.StatusBadRequest)
+		k.createJsonResponse(w, err.Error(), false)
+		return
 	}
 
+	for key, value := range resp.Headers {
+		w.Header().Set(key, value)
+	}
+
+	if _, err = w.Write(resp.Body); err != nil {
+		k.Logger.Error("Error writing response body: ", err.Error())
+	}
+}
+
+func (k *Kantoku) publishInteraction(body []byte) (response KantokuReply, err error) {
 	/* publish the interaction and wait for a reply */
 	req := rpc.NewRequest().
 		WithExchange(k.Config.Kantoku.Amqp.Group).
 		WithRoutingKey(k.Config.Kantoku.Amqp.Event)
 
-	req.Publishing.ContentType = contentType
+	req.Publishing.ContentType = "application/json"
 	req.Publishing.Body = body
 
-	res, err := k.RpcClient.Send(req)
-	if err != nil {
-		return KantokuReply{}, err
-	}
-
+	var res *amqp.Delivery
+	res, err = k.RpcClient.Send(req)
 	if err != nil {
 		// TODO: handle rpc errors correctly
 		switch err {
@@ -135,10 +131,13 @@ func (k *Kantoku) publishInteraction(i discord.Interaction) (KantokuReply, error
 		case rpc.ErrUnexpectedConnClosed:
 			log.Fatalln(err)
 		}
-
-		return KantokuReply{}, err
+		return
 	}
 
-	var response KantokuReply
-	return response, Decode(res.Body, &response)
+	err = codec.NewDecoderBytes(res.Body, k.MsgpackHandle).Decode(&response)
+	return
+}
+
+type InteractionResponse struct {
+	Type int `json:"type"`
 }

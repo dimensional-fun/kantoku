@@ -6,18 +6,18 @@ import (
 )
 
 type Response struct {
-	Data    interface{} `json:"data"`
-	Success bool        `json:"success"`
+	Data    any  `json:"data"`
+	Success bool `json:"success"`
 }
 
-func (k *Kantoku) createJsonResponse(w http.ResponseWriter, data interface{}, success bool) {
+func (k *Kantoku) createJsonResponse(w http.ResponseWriter, data any, success bool) {
 	k.createJson(w, Response{
 		Data:    data,
 		Success: success,
 	})
 }
 
-func (k *Kantoku) createJson(w http.ResponseWriter, data interface{}) {
+func (k *Kantoku) createJson(w http.ResponseWriter, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(data); err != nil {
 		k.Logger.Errorf("Failed to create JSON response: %s", err)
