@@ -3,7 +3,7 @@ public_key = ""
 
     [kantoku.server]
     host = "127.0.0.1"
-    port = 8080
+    port = 80
     expose_test_route = false
 
     [kantoku.amqp]
