@@ -19,7 +19,7 @@
 
 _wip_
 
-###### [Discord Server](https://discord.gg/yDQz3fMBfz)
+###### [Discord Server](https://discord.gg/8R4d8RydT4)
 
 ## 📁 api
 
@@ -59,4 +59,4 @@ response body is the response returned to discord.
 
 ---
 
-Mixtape Bot &bull; Licensed under [**LGPL-2.1**](/LICENSE) 
+[Dimensional Fun](https://dimensional.fun) &bull; Licensed under [**LGPL-2.1**](/LICENSE) 
