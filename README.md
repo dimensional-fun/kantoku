@@ -3,7 +3,7 @@
 ## 📦 Features
 
 - super-duper fast
-- publishes all interactions to rabbitmq as JSON
+- publishes interactions to a NATS subject
 - interaction testing route
 
 ## ⛓️ usage
@@ -16,6 +16,9 @@
    your interactions endpoint url to `https://<domain>/v1/interactions`
 
 ### implementing kantoku into your code base
+
+Whenever Discord `POST`s an interaction to `/v1/interactions` Kantoku will request an interaction response on the
+configured NATS subject.
 
 _wip_
 
@@ -46,16 +49,10 @@ _wip_
 
 <https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-response-object>
 
-#### Amqp Response
-
-response body is the response returned to discord.
-
-**A _Content-Header_ must be supplied**
-
 ## 📜 contributors
 
 - [@melike2d](https://github.com/melike2d)
-- [@TopiSenpai](https://github.com/TopiSenpai)
+- [@Topi314](https://github.com/Topi314)
 
 ---
 
