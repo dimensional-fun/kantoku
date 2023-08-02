@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -57,7 +58,7 @@ func main() {
 	}
 
 	/* prepare nats client */
-	nc, err := nats.Connect(k.Config.Kantoku.Nats.URI)
+	nc, err := nats.Connect(strings.Join(k.Config.Kantoku.Nats.Servers, ", "))
 	if err != nil {
 		k.Logger.Fatal("connecting to NATS server failed: ", err)
 	}

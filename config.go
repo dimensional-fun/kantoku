@@ -33,7 +33,7 @@ type ServerConfig struct {
 }
 
 type NatsConfig struct {
-	URI          string       `toml:"uri"`
+	Servers      []string     `toml:"servers"`
 	Subject      string       `toml:"subject"`
 	NoResponders *interface{} `toml:"no_responders"`
 }
