@@ -22,7 +22,7 @@ type Config struct {
 type KantokuConfig struct {
 	PublicKey string        `toml:"public_key"`
 	Server    ServerConfig  `toml:"server"`
-	Amqp      AmqpConfig    `toml:"amqp"`
+	Nats      NatsConfig    `toml:"nats"`
 	Logging   LoggingConfig `toml:"logging"`
 }
 
@@ -32,10 +32,10 @@ type ServerConfig struct {
 	ExposeTestRoute bool   `toml:"expose_test_route"`
 }
 
-type AmqpConfig struct {
-	URI   string `toml:"uri"`
-	Group string `toml:"group"`
-	Event string `toml:"event"`
+type NatsConfig struct {
+	URI          string       `toml:"uri"`
+	Subject      string       `toml:"group"`
+	NoResponders *interface{} `toml:"no_responders"`
 }
 
 type LoggingConfig struct {

@@ -6,10 +6,10 @@ public_key = ""
     port = 80
     expose_test_route = false
 
-    [kantoku.amqp]
-    uri = "amqp://localhost:5672"
-    group = "gateway"
-    event = "INTERACTION_CREATE"
+    [kantoku.nats]
+    uri = "nats://localhost:4222"
+    subject = "gateway.INTERACTION_CREATE"
+    no_responders = { type = 4, data = { content = "this command no workery" } }
 
     [kantoku.logging]
     time_format = "01-02-06 15:04:05"

@@ -2,15 +2,15 @@ package main
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
-	rpc "github.com/0x4b53/amqp-rpc"
 	"github.com/gorilla/mux"
+	"github.com/nats-io/nats.go"
 	"github.com/oasisprotocol/curve25519-voi/primitives/ed25519"
 	"github.com/sirupsen/logrus"
-	"github.com/streadway/amqp"
 )
 
 const version = "dev"
@@ -46,16 +46,24 @@ func main() {
 		k.Logger.Fatal("failed to decode public key: ", err)
 	}
 
-	/* setting up RPC using RabbitMQ */
-	k.RpcClient = rpc.NewClient(k.Config.Kantoku.Amqp.URI).
-		WithTimeout(3000 * time.Millisecond).
-		WithConfirmMode(true).
-		WithDebugLogger(k.Logger.Debugf).
-		WithErrorLogger(k.Logger.Errorf)
+	/* prepare no_responders reply. */
+	if k.Config.Kantoku.Nats.NoResponders != nil {
+		b, err := json.Marshal(k.Config.Kantoku.Nats.NoResponders)
+		if err != nil {
+			k.Logger.Warnln("unable to encode 'no_responders' reply: ", err)
+		} else {
+			k.NoResponders = b
+		}
+	}
 
-	k.RpcClient.OnStarted(func(_, _ *amqp.Connection, inChan, _ *amqp.Channel) {
-		k.Logger.Infoln("connected to rabbitmq")
-	})
+	/* prepare nats client */
+	nc, err := nats.Connect(k.Config.Kantoku.Nats.URI)
+	if err != nil {
+		k.Logger.Fatal("connecting to NATS server failed: ", err)
+	}
+
+	k.NatsConn = nc
+	k.Logger.Infoln("connected to NATS server!")
 
 	/* starting Server */
 	k.Logger.Infof("starting w/ version: %s...", version)
@@ -104,8 +112,9 @@ func main() {
 }
 
 type Kantoku struct {
-	RpcClient *rpc.Client
-	Config    Config
-	Logger    *logrus.Logger
-	PublicKey ed25519.PublicKey
+	NatsConn     *nats.Conn
+	NoResponders []byte
+	Config       Config
+	Logger       *logrus.Logger
+	PublicKey    ed25519.PublicKey
 }
