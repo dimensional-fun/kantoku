@@ -9,7 +9,7 @@ public_key = ""
     [kantoku.nats]
     servers = ["nats://127.0.0.1:4222"]
     subject = "gateway.INTERACTION_CREATE"
-    no_responders = { type = 4, data = { content = "this command no workery" } }
+    no_responders = { content = "this command no workery" }
 
     [kantoku.logging]
     time_format = "01-02-06 15:04:05"

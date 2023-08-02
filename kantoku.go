@@ -49,7 +49,11 @@ func main() {
 
 	/* prepare no_responders reply. */
 	if k.Config.Kantoku.Nats.NoResponders != nil {
-		b, err := json.Marshal(k.Config.Kantoku.Nats.NoResponders)
+		b, err := json.Marshal(map[string]any{
+			"type": 4,
+			"data": k.Config.Kantoku.Nats.NoResponders,
+		})
+
 		if err != nil {
 			k.Logger.Warnln("unable to encode 'no_responders' reply: ", err)
 		} else {
