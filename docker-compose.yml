@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
     kantoku:
-        image: ghcr.io/mixtape-bot/kantoku
+        image: ghcr.io/dimensional-fun/kantoku
         container_name: kantoku
         networks:
             - nats
