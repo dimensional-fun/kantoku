@@ -2,26 +2,26 @@ version: '3.7'
 
 services:
     kantoku:
-        image: ghcr.io/mixtape-bot/kantoku
+        image: ghcr.io/dimensional-fun/kantoku
         container_name: kantoku
         networks:
-            - rabbitmq
+            - nats
         volumes:
             - ./kantoku.toml:/opt/kantoku/kantoku.toml
         restart: unless-stopped
         depends_on:
-            - rabbitmq
+            - nats
         expose:
             - 80
-    rabbitmq:
-        image: rabbitmq:management-alpine
-        container_name: rabbitmq
+    nats:
+        image: nats:alpine
+        container_name: nats
         restart: unless-stopped
         expose:
-            - 5672
+            - 4222
         networks:
-            - rabbitmq
+            - nats
 
 networks:
-    rabbitmq:
-        name: rabbitmq
+    nats:
+        name: nats

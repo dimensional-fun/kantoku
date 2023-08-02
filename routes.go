@@ -3,12 +3,12 @@ package main
 import (
 	"encoding/hex"
 	"encoding/json"
-	"github.com/oasisprotocol/curve25519-voi/primitives/ed25519"
-	"github.com/streadway/amqp"
 	"io"
 	"net/http"
+	"time"
 
-	rpc "github.com/0x4b53/amqp-rpc"
+	"github.com/nats-io/nats.go"
+	"github.com/oasisprotocol/curve25519-voi/primitives/ed25519"
 )
 
 func (k *Kantoku) GetIndex(w http.ResponseWriter, _ *http.Request) {
@@ -85,31 +85,36 @@ func (k *Kantoku) handleInteraction(w http.ResponseWriter, r *http.Request, pk e
 
 	resp, err := k.publishInteraction(body)
 	if err != nil {
+		if err == nats.ErrNoResponders && k.NoResponders != nil {
+			k.reply(w, k.NoResponders, "application/json")
+			return
+		}
+
 		k.Logger.Errorln("Error publishing interaction:", err)
 		w.WriteHeader(http.StatusBadRequest)
 		k.createJsonResponse(w, err.Error(), false)
 		return
 	}
 
-	if resp.ContentType == "" {
-		_ = resp.Nack(false, false)
+	contentType := resp.Header.Get("Content-Type")
+	if contentType == "" {
 		return
 	}
 
-	w.Header().Set("Content-Type", resp.ContentType)
-	if _, err = w.Write(resp.Body); err != nil {
+	k.reply(w, resp.Data, contentType)
+}
+
+func (k *Kantoku) reply(w http.ResponseWriter, body []byte, contentType string) {
+	w.Header().Set("Content-Type", contentType)
+	if _, err := w.Write(body); err != nil {
 		k.Logger.Errorln("Error writing response body:", err.Error())
 	}
 }
 
-func (k *Kantoku) publishInteraction(body []byte) (*amqp.Delivery, error) {
-	/* publish the interaction and wait for a reply */
-	req := rpc.NewRequest().
-		WithExchange(k.Config.Kantoku.Amqp.Group).
-		WithRoutingKey(k.Config.Kantoku.Amqp.Event)
+func (k *Kantoku) publishInteraction(body []byte) (*nats.Msg, error) {
+	msg := nats.NewMsg(k.Config.Kantoku.Nats.Subject)
+	msg.Data = body
+	msg.Header.Add("Content-Type", "application/json")
 
-	req.Publishing.ContentType = "application/json"
-	req.Publishing.Body = body
-
-	return k.RpcClient.Send(req)
+	return k.NatsConn.RequestMsg(msg, 3*time.Second)
 }
